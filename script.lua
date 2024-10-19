@@ -217,7 +217,6 @@ local esptable = {
 }
 
 local Library = loadstring(game:HttpGet("https://github.com/Drop56796/CreepyEyeHub/blob/main/UI%20Style%20theme.lua?raw=true"))()
-local textChannel = game:GetService("TextChatService"):WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -257,50 +256,44 @@ local Tabs = {
 }
 local RightGroup = Tabs.Main3:AddLeftGroupbox('ESP')
 local Group = Tabs.Main:AddLeftGroupbox('Chat Nofiction')
+local textChannel = game:GetService("TextChatService"):WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+
 Group:AddToggle('entityEvent', {
     Text = 'Entity Event',
     Default = false,
     Tooltip = 'Walk through walls',
     Callback = function(state)
         if state then
-            local entityNames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "A90", "Eyes", "JeffTheKiller"} -- Entity names
-            local flags = flags or {} -- Prevent errors
-            local plr = game.Players.LocalPlayer -- Prevent errors
+            local entityNames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "A90", "Eyes", "JeffTheKiller"}
+            local plr = game.Players.LocalPlayer
+
             local function notifyEntitySpawn(entity)
                 local entityName = entity.Name:gsub("Moving", ""):lower()
                 local entityMessage = entityName .. " " .. (customEntityMessage or "Spawned!")
                 addAndPlaySound("ExampleSound", 4590657391)
-                game:GetService("TextChatService").Chat(textChannel, entityMessage) -- Chat notification
+                textChannel:SendAsync(entityMessage) -- 使用 SendAsync 发送消息
             end
+
             local function onChildAdded(child)
                 if table.find(entityNames, child.Name) then
-                    repeat
-                        task.wait()
-                    until plr:DistanceFromCharacter(child:GetPivot().Position) < 1000 or not child:IsDescendantOf(workspace)
+                    repeat task.wait() until plr:DistanceFromCharacter(child:GetPivot().Position) < 1000 or not child:IsDescendantOf(workspace)
 
                     if child:IsDescendantOf(workspace) then
                         notifyEntitySpawn(child)
                     end
                 end
             end
-            -- Infinite loop to keep the script running and check the hintrush flag
-            local running = true
-            while running do
-                local connection = workspace.ChildAdded:Connect(onChildAdded)
 
-                repeat
-                    task.wait(1) -- Adjust wait time as needed
-                until not flags.hintrush or not running
+            local connection = workspace.ChildAdded:Connect(onChildAdded)
 
-                connection:Disconnect()
+            -- 处理运行状态
+            while state do
+                task.wait(1)
             end
-        else
-            -- Turn off notifications or perform other cleanup if needed
-            running = false
+            connection:Disconnect()
         end
     end
 })
-
 Group:AddToggle('No Clip', {
     Text = 'Library Code',
     Default = false,
@@ -338,7 +331,7 @@ Group:AddToggle('No Clip', {
                     if code:find("_") then
                         local message = "You are still missing some books! The current code is: '" .. code .. "'"
 			addAndPlaySound("ExampleSound", 4590657391)
-                        game:GetService("TextChatService").Chat(textChannel, message) -- Chat notification
+                        textChannel:SendAsync(message) -- 使用 SendAsync 发送消息
                     else
                         if not apart then
                             apart = Instance.new("Part", game.ReplicatedStorage)
@@ -350,8 +343,7 @@ Group:AddToggle('No Clip', {
                             addAndPlaySound("ExampleSound", 4590657391)
                             -- Notify complete code
                             local successMessage = "The code is '" .. code .. "'."
-                            game:GetService("TextChatService").Chat(textChannel, successMessage) -- Chat notification
-                            -- Wait for room change
+                            textChannel:SendAsync(successMessage) -- 使用 SendAsync 发送消息
                             repeat
                                 task.wait(0.1)
                             until game:GetService("ReplicatedStorage").GameData.LatestRoom.Value ~= 50
