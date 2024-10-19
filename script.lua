@@ -233,7 +233,7 @@ local Window = Library:CreateWindow({
 	-- Position and Size are also valid options here
 	-- but you do not need to define them unless you are changing them :)
 
-	Title = 'Expliot Hax Alpha 2',
+	Title = 'Expliot Hax Alpha 3',
 	Center = true,
 	AutoShow = true,
 	Resizable = true,
@@ -253,9 +253,151 @@ local Tabs = {
 	Main = Window:AddTab('LocalPlayer'),
 	Main2 = Window:AddTab('Expliots'),
         Main3 = Window:AddTab('Expliots ESP'),
+	UI = Window:AddTan('UI setting')
 }
 local RightGroup = Tabs.Main3:AddLeftGroupbox('ESP')
 local Group = Tabs.Main:AddLeftGroupbox('Chat Nofiction')
+local LeftGroupBox = Tabs.UI:AddLeftGroupbox('UI THEME')
+local man = Tabs.UI:AddLeftGroupbox('THEME Manager [IDK work]')
+-- 初始化 Library
+-- 主题定义
+Library.Themes = {
+    Light = {
+        FontColor = Color3.fromRGB(0, 0, 0),
+        MainColor = Color3.fromRGB(255, 255, 255),
+        BackgroundColor = Color3.fromRGB(240, 240, 240),
+        AccentColor = Color3.fromRGB(0, 150, 255),
+        OutlineColor = Color3.fromRGB(200, 200, 200),
+        RiskColor = Color3.fromRGB(255, 0, 0),
+    },
+    Dark = {
+        FontColor = Color3.fromRGB(255, 255, 255),
+        MainColor = Color3.fromRGB(28, 28, 28),
+        BackgroundColor = Color3.fromRGB(20, 20, 20),
+        AccentColor = Color3.fromRGB(0, 85, 255),
+        OutlineColor = Color3.fromRGB(50, 50, 50),
+        RiskColor = Color3.fromRGB(255, 50, 50),
+    },
+    Retro = {
+        FontColor = Color3.fromRGB(255, 255, 255),
+        MainColor = Color3.fromRGB(100, 100, 100),
+        BackgroundColor = Color3.fromRGB(50, 50, 50),
+        AccentColor = Color3.fromRGB(255, 255, 0),
+        OutlineColor = Color3.fromRGB(0, 0, 0),
+        RiskColor = Color3.fromRGB(255, 100, 0),
+    },
+    Ocean = {
+        FontColor = Color3.fromRGB(255, 255, 255),
+        MainColor = Color3.fromRGB(0, 102, 204),
+        BackgroundColor = Color3.fromRGB(0, 51, 102),
+        AccentColor = Color3.fromRGB(0, 204, 255),
+        OutlineColor = Color3.fromRGB(0, 76, 153),
+        RiskColor = Color3.fromRGB(255, 0, 0),
+    },
+    Forest = {
+        FontColor = Color3.fromRGB(255, 255, 255),
+        MainColor = Color3.fromRGB(34, 139, 34),
+        BackgroundColor = Color3.fromRGB(0, 51, 0),
+        AccentColor = Color3.fromRGB(85, 107, 47),
+        OutlineColor = Color3.fromRGB(0, 100, 0),
+        RiskColor = Color3.fromRGB(255, 165, 0),
+    },
+    Cyberpunk = {
+        FontColor = Color3.fromRGB(0, 255, 255),
+        MainColor = Color3.fromRGB(20, 20, 20),
+        BackgroundColor = Color3.fromRGB(40, 40, 40),
+        AccentColor = Color3.fromRGB(255, 0, 255),
+        OutlineColor = Color3.fromRGB(100, 0, 100),
+        RiskColor = Color3.fromRGB(255, 0, 0),
+    },
+}
+
+-- 主题管理器
+Library.ThemeManager = {
+    SetTheme = function(theme)
+        Library.FontColor = theme.FontColor
+        Library.MainColor = theme.MainColor
+        Library.BackgroundColor = theme.BackgroundColor
+        Library.AccentColor = theme.AccentColor
+        Library.OutlineColor = theme.OutlineColor
+        Library.RiskColor = theme.RiskColor
+        -- 这里可以添加更新 UI 的代码
+    end,
+}
+
+-- 添加下拉框
+man:AddDropdown('ThemeDropdown', {
+    Values = { 'Light', 'Dark', 'Retro', 'Ocean', 'Forest', 'Cyberpunk' },
+    Default = 1,
+    Multi = false,
+    Text = 'Select a Theme',
+    Callback = function(selectedTheme)
+        local theme = Library.Themes[selectedTheme]
+        if theme then
+            Library.ThemeManager.SetTheme(theme)
+            print('Theme changed to:', selectedTheme)
+        end
+    end
+})
+
+-- 运行脚本
+
+-- 添加颜色选择器
+LeftGroupBox:AddLabel('Font Color'):AddColorPicker('FontColorPicker', {
+    Default = Library.FontColor,
+    Title = 'Select Font Color',
+})
+
+LeftGroupBox:AddLabel('Main Color'):AddColorPicker('MainColorPicker', {
+    Default = Library.MainColor,
+    Title = 'Select Main Color',
+})
+
+LeftGroupBox:AddLabel('Background Color'):AddColorPicker('BackgroundColorPicker', {
+    Default = Library.BackgroundColor,
+    Title = 'Select Background Color',
+})
+
+LeftGroupBox:AddLabel('Accent Color'):AddColorPicker('AccentColorPicker', {
+    Default = Library.AccentColor,
+    Title = 'Select Accent Color',
+})
+
+LeftGroupBox:AddLabel('Outline Color'):AddColorPicker('OutlineColorPicker', {
+    Default = Library.OutlineColor,
+    Title = 'Select Outline Color',
+})
+
+LeftGroupBox:AddLabel('Risk Color'):AddColorPicker('RiskColorPicker', {
+    Default = Library.RiskColor,
+    Title = 'Select Risk Color',
+})
+
+-- 颜色选择器回调
+Options.FontColorPicker:OnChanged(function(newColor)
+    Library.FontColor = newColor
+end)
+
+Options.MainColorPicker:OnChanged(function(newColor)
+    Library.MainColor = newColor
+end)
+
+Options.BackgroundColorPicker:OnChanged(function(newColor)
+    Library.BackgroundColor = newColor
+end)
+
+Options.AccentColorPicker:OnChanged(function(newColor)
+    Library.AccentColor = newColor
+end)
+
+Options.OutlineColorPicker:OnChanged(function(newColor)
+    Library.OutlineColor = newColor
+end)
+
+Options.RiskColorPicker:OnChanged(function(newColor)
+    Library.RiskColor = newColor
+end)
+
 local textChannel = game:GetService("TextChatService"):WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
 
 Group:AddToggle('entityEvent', {
