@@ -253,7 +253,7 @@ local Tabs = {
 	Main = Window:AddTab('LocalPlayer'),
 	Main2 = Window:AddTab('Expliots'),
         Main3 = Window:AddTab('Expliots ESP'),
-	UI = Window:AddTan('UI setting')
+	UI = Window:AddTab('UI setting')
 }
 local RightGroup = Tabs.Main3:AddLeftGroupbox('ESP')
 local Group = Tabs.Main:AddLeftGroupbox('Chat Nofiction')
