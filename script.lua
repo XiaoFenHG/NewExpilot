@@ -259,8 +259,104 @@ local RightGroup = Tabs.Main3:AddLeftGroupbox('ESP')
 local Group = Tabs.Main:AddLeftGroupbox('Chat Nofiction')
 local LeftGroupBox = Tabs.UI:AddLeftGroupbox('UI THEME')
 local man = Tabs.UI:AddLeftGroupbox('THEME Manager [IDK work]')
--- 初始化 Library
--- 主题定义
+local Library = {
+    Registry = {},
+    RegistryMap = {},
+    HudRegistry = {},
+
+    -- Color Properties
+    FontColor = Color3.fromRGB(255, 255, 255),
+    MainColor = Color3.fromRGB(28, 28, 28),
+    BackgroundColor = Color3.fromRGB(20, 20, 20),
+    AccentColor = Color3.fromRGB(0, 85, 255), -- Initial color
+    OutlineColor = Color3.fromRGB(50, 50, 50),
+    RiskColor = Color3.fromRGB(255, 50, 50),
+
+    Black = Color3.new(0, 0, 0),
+    Font = Enum.Font.Jura,
+
+    OpenedFrames = {},
+    DependencyBoxes = {},
+    Signals = {},
+    ScreenGui = ScreenGui,
+
+    ActiveTab = nil,
+    Toggled = false,
+
+    MinSize = Vector2.new(550, 300),
+    IsMobile = false,
+    DevicePlatform = Enum.Platform.None,
+    CanDrag = true,
+    CantDragForced = false,
+    ShowCustomCursor = true,
+    VideoLink = "",
+    TotalTabs = 0,
+}
+
+-- Add color pickers to the left group box
+local function AddColorPickers()
+    LeftGroupBox:AddLabel('Font Color'):AddColorPicker('FontColorPicker', {
+        Default = Library.FontColor,
+        Title = 'Select Font Color',
+    })
+
+    LeftGroupBox:AddLabel('Main Color'):AddColorPicker('MainColorPicker', {
+        Default = Library.MainColor,
+        Title = 'Select Main Color',
+    })
+
+    LeftGroupBox:AddLabel('Background Color'):AddColorPicker('BackgroundColorPicker', {
+        Default = Library.BackgroundColor,
+        Title = 'Select Background Color',
+    })
+
+    LeftGroupBox:AddLabel('Accent Color'):AddColorPicker('AccentColorPicker', {
+        Default = Library.AccentColor,
+        Title = 'Select Accent Color',
+    })
+
+    LeftGroupBox:AddLabel('Outline Color'):AddColorPicker('OutlineColorPicker', {
+        Default = Library.OutlineColor,
+        Title = 'Select Outline Color',
+    })
+
+    LeftGroupBox:AddLabel('Risk Color'):AddColorPicker('RiskColorPicker', {
+        Default = Library.RiskColor,
+        Title = 'Select Risk Color',
+    })
+end
+
+-- Color picker callbacks
+local function SetupColorPickerCallbacks()
+    Options.FontColorPicker:OnChanged(function(newColor)
+        Library.FontColor = newColor
+    end)
+
+    Options.MainColorPicker:OnChanged(function(newColor)
+        Library.MainColor = newColor
+    end)
+
+    Options.BackgroundColorPicker:OnChanged(function(newColor)
+        Library.BackgroundColor = newColor
+    end)
+
+    Options.AccentColorPicker:OnChanged(function(newColor)
+        Library.AccentColor = newColor
+    end)
+
+    Options.OutlineColorPicker:OnChanged(function(newColor)
+        Library.OutlineColor = newColor
+    end)
+
+    Options.RiskColorPicker:OnChanged(function(newColor)
+        Library.RiskColor = newColor
+    end)
+end
+
+-- Initialize color pickers and callbacks
+AddColorPickers()
+SetupColorPickerCallbacks()
+----
 Library.Themes = {
     Light = {
         FontColor = Color3.fromRGB(0, 0, 0),
@@ -312,7 +408,7 @@ Library.Themes = {
     },
 }
 
--- 主题管理器
+-- Theme Manager
 Library.ThemeManager = {
     SetTheme = function(theme)
         Library.FontColor = theme.FontColor
@@ -321,11 +417,13 @@ Library.ThemeManager = {
         Library.AccentColor = theme.AccentColor
         Library.OutlineColor = theme.OutlineColor
         Library.RiskColor = theme.RiskColor
-        -- 这里可以添加更新 UI 的代码
+        
+        -- Update UI here if necessary
+        -- Example: UpdateUI()
     end,
 }
 
--- 添加下拉框
+-- Add Dropdown for Theme Selection
 man:AddDropdown('ThemeDropdown', {
     Values = { 'Light', 'Dark', 'Retro', 'Ocean', 'Forest', 'Cyberpunk' },
     Default = 1,
@@ -335,69 +433,9 @@ man:AddDropdown('ThemeDropdown', {
         local theme = Library.Themes[selectedTheme]
         if theme then
             Library.ThemeManager.SetTheme(theme)
-            print('Theme changed to:', selectedTheme)
         end
     end
 })
-
--- 运行脚本
-
--- 添加颜色选择器
-LeftGroupBox:AddLabel('Font Color'):AddColorPicker('FontColorPicker', {
-    Default = Library.FontColor,
-    Title = 'Select Font Color',
-})
-
-LeftGroupBox:AddLabel('Main Color'):AddColorPicker('MainColorPicker', {
-    Default = Library.MainColor,
-    Title = 'Select Main Color',
-})
-
-LeftGroupBox:AddLabel('Background Color'):AddColorPicker('BackgroundColorPicker', {
-    Default = Library.BackgroundColor,
-    Title = 'Select Background Color',
-})
-
-LeftGroupBox:AddLabel('Accent Color'):AddColorPicker('AccentColorPicker', {
-    Default = Library.AccentColor,
-    Title = 'Select Accent Color',
-})
-
-LeftGroupBox:AddLabel('Outline Color'):AddColorPicker('OutlineColorPicker', {
-    Default = Library.OutlineColor,
-    Title = 'Select Outline Color',
-})
-
-LeftGroupBox:AddLabel('Risk Color'):AddColorPicker('RiskColorPicker', {
-    Default = Library.RiskColor,
-    Title = 'Select Risk Color',
-})
-
--- 颜色选择器回调
-Options.FontColorPicker:OnChanged(function(newColor)
-    Library.FontColor = newColor
-end)
-
-Options.MainColorPicker:OnChanged(function(newColor)
-    Library.MainColor = newColor
-end)
-
-Options.BackgroundColorPicker:OnChanged(function(newColor)
-    Library.BackgroundColor = newColor
-end)
-
-Options.AccentColorPicker:OnChanged(function(newColor)
-    Library.AccentColor = newColor
-end)
-
-Options.OutlineColorPicker:OnChanged(function(newColor)
-    Library.OutlineColor = newColor
-end)
-
-Options.RiskColorPicker:OnChanged(function(newColor)
-    Library.RiskColor = newColor
-end)
-
 local textChannel = game:GetService("TextChatService"):WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
 
 Group:AddToggle('entityEvent', {
