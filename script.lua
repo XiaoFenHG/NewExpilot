@@ -1213,33 +1213,76 @@ a:AddToggle('this', {
     Default = false,
     Tooltip = 'Toggle proximity prompt interactions',
     Callback = function(val)
-        while val do
+        flags.draweraura = val
+			
+        if flags.draweraura do
             -- 获取所有房间
             local rooms = game:GetService("Workspace"):WaitForChild("CurrentRooms")
 
             -- 遍历每个房间
             for _, room in pairs(rooms:GetChildren()) do
-                -- 查找Assets
-                local assets = room:FindFirstChild("Assets")
-                if assets then
-                    -- 查找DrawerContainer
-                    local drawerContainer = assets:FindFirstChild("DrawerContainer")
-                    if drawerContainer then
-                        -- 等待Knobs
-                        local knobs = drawerContainer:WaitForChild("Knobs")
-                        if knobs then
-                            -- 等待ActivateEventPrompt
-                            local activateEventPrompt = knobs:WaitForChild("ActivateEventPrompt")
-                            if activateEventPrompt then
-                                -- 使用PromptProximityService点击
-                                local proximityService = game:GetService("PromptProximityService")
-                                proximityService:FirePrompt(activateEventPrompt)
+                local function check(v)
+                    if v.Name == "DrawerContainer" then
+                        local knob = v:WaitForChild("Knobs")
+                        
+                        if knob then
+                            local prompt = knob:WaitForChild("ActivateEventPrompt")
+                            local interactions = prompt:GetAttribute("Interactions")
+                            
+                            if not interactions then
+                                task.spawn(function()
+                                    repeat task.wait(0.1)
+                                        if plr:DistanceFromCharacter(knob.Position) <= 12 then
+                                            fireproximityprompt(prompt)
+                                        end
+                                    until prompt:GetAttribute("Interactions") or not flags.draweraura
+                                end)
                             end
                         end
-                    end
+                    elseif v.Name == "RolltopContainer" then
+                        local prompt = v:WaitForChild("ActivateEventPrompt")
+                        local interactions = prompt:GetAttribute("Interactions")
+                        
+                        if not interactions then
+                            task.spawn(function()
+                                repeat task.wait(0.1)
+                                    if plr:DistanceFromCharacter(v.PrimaryPart.Position) <= 12 then
+                                        fireproximityprompt(prompt)
+                                    end
+                                until prompt:GetAttribute("Interactions") or not flags.draweraura
+                            end)
+                        end
+                    end 
+                end
+
+                local subaddcon
+                subaddcon = room.DescendantAdded:Connect(function(v)
+                    check(v) 
+                end)
+                
+                for i, v in pairs(room:GetDescendants()) do
+                    check(v)
+                end
+                
+                task.spawn(function()
+                    repeat task.wait() until not flags.draweraura
+                    subaddcon:Disconnect() 
+                end)
+            end
+
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for i, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                if room:FindFirstChild("Assets") then
+                    setup(room) 
                 end
             end
-            wait(0.1) -- 等待1秒后再次执行循环
+            
+            repeat task.wait() until not flags.draweraura
+            addconnect:Disconnect()
         end
     end
 })
