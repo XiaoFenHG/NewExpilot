@@ -1,3 +1,6 @@
+local RunService = game:GetService("RunService")
+local Camera = game.Workspace.CurrentCamera
+
 local function createHighlight(part, color)
     local highlight = Instance.new("Highlight")
     highlight.Adornee = part
@@ -9,7 +12,6 @@ local function createHighlight(part, color)
     return highlight
 end
 
--- 创建 BillboardGui 实例
 local function createBillboardGui(core, color, name)
     local bill = Instance.new("BillboardGui", game.CoreGui)
     bill.AlwaysOnTop = true
@@ -20,14 +22,13 @@ local function createBillboardGui(core, color, name)
     local txt = Instance.new("TextLabel", bill)
     txt.AnchorPoint = Vector2.new(0.5, 0.5)
     txt.BackgroundTransparency = 1
-    txt.BackgroundColor3 = color
     txt.TextColor3 = color
     txt.Size = UDim2.new(1, 0, 0, 20)
     txt.Position = UDim2.new(0.5, 0, 0.5, 0)
     txt.Text = name
     txt.TextStrokeTransparency = 0.5
     txt.TextSize = 25
-    txt.Font = Enum.Font.Code -- 设置字体为 Jura
+    txt.Font = Enum.Font.Code
     Instance.new("UIStroke", txt)
 
     local distanceLabel = Instance.new("TextLabel", bill)
@@ -35,13 +36,12 @@ local function createBillboardGui(core, color, name)
     distanceLabel.BackgroundTransparency = 1
     distanceLabel.TextColor3 = color
     distanceLabel.Size = UDim2.new(1, 0, 0, 20)
-    distanceLabel.Position = UDim2.new(0.5, 0, 0.9, 0) -- Position below the name
+    distanceLabel.Position = UDim2.new(0.5, 0, 0.9, 0)
     distanceLabel.TextStrokeTransparency = 0.5
     distanceLabel.TextSize = 20
-    distanceLabel.Font = Enum.Font.Code -- 设置字体为 Jura
+    distanceLabel.Font = Enum.Font.Code
     Instance.new("UIStroke", distanceLabel)
 
-    -- Update distance text
     local function updateDistance()
         if core and core:IsDescendantOf(workspace) then
             local playerPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
@@ -57,8 +57,8 @@ local function createBillboardGui(core, color, name)
             end
 
             if targetPos then
-                local distance = (playerPos - targetPos).Magnitude
-                distanceLabel.Text = string.format("Distance: %.2f", distance)
+                local distance = math.floor((playerPos - targetPos).Magnitude)
+                distanceLabel.Text = string.format("[%d]", distance)
             end
         end
     end
@@ -68,7 +68,6 @@ local function createBillboardGui(core, color, name)
     return bill
 end
 
--- 创建追踪线实例
 local function createTracer(target, color)
     local line = Drawing.new("Line")
     line.Color = color
@@ -78,7 +77,7 @@ local function createTracer(target, color)
     local function updateTracer()
         if target and target:IsDescendantOf(workspace) then
             local targetPos = Camera:WorldToViewportPoint(target.Position)
-            local screenPos = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y) -- 从屏幕中心底部开始
+            local screenPos = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
 
             line.From = screenPos
             line.To = Vector2.new(targetPos.X, targetPos.Y)
@@ -93,12 +92,8 @@ local function createTracer(target, color)
     return line
 end
 
--- 主 ESP 函数
 function esp(what, color, core, name, enableTracer)
-    -- 检查是否传入 enableTracer 参数，如果未传入，则默认为 false
-    if enableTracer == nil then
-        enableTracer = false
-    end
+    enableTracer = enableTracer or false
 
     local parts = {}
     if typeof(what) == "Instance" then
@@ -126,7 +121,6 @@ function esp(what, color, core, name, enableTracer)
         local highlight = createHighlight(part, color)
         table.insert(highlights, highlight)
 
-        -- 追踪线仅针对第一个有效部件
         if enableTracer and #tracers == 0 then
             local tracer = createTracer(part, color)
             table.insert(tracers, tracer)
@@ -138,7 +132,7 @@ function esp(what, color, core, name, enableTracer)
         bill = createBillboardGui(core, color, name)
     end
 
-    local function checkAndUpdate()        
+    local function checkAndUpdate()
         for _, highlight in ipairs(highlights) do
             if not highlight.Adornee or not highlight:IsDescendantOf(workspace) then
                 highlight:Destroy()
@@ -149,7 +143,6 @@ function esp(what, color, core, name, enableTracer)
             bill:Destroy()
         end
 
-        -- 检查 Tracer 是否需要更新
         for _, tracer in ipairs(tracers) do
             if not tracer or not tracer.Visible then
                 tracer:Remove()
@@ -160,25 +153,19 @@ function esp(what, color, core, name, enableTracer)
     RunService.Stepped:Connect(checkAndUpdate)
 
     local ret = {}
-
-    ret.delete = function()      
+    ret.delete = function()
         for _, highlight in ipairs(highlights) do
             highlight:Destroy()
         end
 
-        if bill and (not bill.Adornee or not bill.Adornee:IsDescendantOf(workspace)) then
+        if bill then
             bill:Destroy()
         end
 
-        -- 检查 Tracer 是否需要更新
         for _, tracer in ipairs(tracers) do
-            if not tracer or not tracer.Visible then
-                tracer:Remove()
-            end
+            tracer:Remove()
         end
     end
-
-    RunService.Stepped:Connect(checkAndUpdate)
 
     return ret
 end
