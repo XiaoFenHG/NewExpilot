@@ -204,6 +204,7 @@ local esptable = {
     guidances = {}
 }
 
+
 local Library = loadstring(game:HttpGet("https://github.com/Drop56796/CreepyEyeHub/blob/main/UI%20Style%20theme.lua?raw=true"))()
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
@@ -241,12 +242,38 @@ local Tabs = {
 	Main = Window:AddTab('LocalPlayer'),
 	Main2 = Window:AddTab('Expliots'),
         Main3 = Window:AddTab('Expliots ESP'),
-	UI = Window:AddTab('UI setting[No Work]')
+	UI = Window:AddTab('setting')
 }
 local RightGroup = Tabs.Main3:AddLeftGroupbox('ESP')
+local LeftGroupBox = Tabs.UI:AddLeftGroupbox('esp color')
 local Group = Tabs.Main:AddLeftGroupbox('Chat Nofiction')
 local textChannel = game:GetService("TextChatService"):WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+local objects = {"Door", "Lever", "Closet", "Locker", "Entity", "Key", "Book", "Player", "Item"}
+local esp = {
+    Item = Color3.fromRGB(255, 255, 255),
+    player = Color3.fromRGB(255, 255, 255),
+    Book = Color3.fromRGB(255, 255, 255),
+    key = Color3.fromRGB(255, 255, 255),
+    Entity = Color3.fromRGB(255, 255, 255),
+    Locker = Color3.fromRGB(255, 255, 255),
+    closet = Color3.fromRGB(255, 255, 255),
+    Lever = Color3.fromRGB(255, 255, 255),
+    Door = Color3.fromRGB(255, 255, 255)
+}
+local options = {}
 
+for _, object in ipairs(objects) do
+    LeftGroupBox:AddLabel(object .. ' Color'):AddColorPicker(object .. 'ColorPicker', {
+        Default = Color3.new(0, 1, 0), -- 默认颜色为亮绿色
+        Title = object .. ' Color' -- 自定义颜色选择器标题
+    })
+
+    options[object .. 'ColorPicker'] = Options[object .. 'ColorPicker']
+
+    options[object .. 'ColorPicker']:OnChanged(function(val)
+        esp[object] = val
+    end)
+end
 Group:AddToggle('entityEvent', {
     Text = 'Entity Event',
     Default = false,
@@ -371,7 +398,7 @@ RightGroup:AddToggle('pe', {
             _G.espInstances = {}
             for _, player in pairs(game.Players:GetPlayers()) do
                 if player.Character then
-                    local espInstance = esp(player.Character, Color3.new(1, 9, 0), player.Character:FindFirstChild("HumanoidRootPart"), player.Name)
+                    local espInstance = esp(player.Character, esp.player, player.Character:FindFirstChild("HumanoidRootPart"), player.Name)
                     table.insert(_G.espInstances, espInstance)
                 end
             end
@@ -400,7 +427,7 @@ RightGroup:AddToggle('pe', {
                     task.wait(0.1)
                     
                     local part = (v:FindFirstChild("Handle") or v:FindFirstChild("Prop"))
-                    local h = esp(part, Color3.fromRGB(255, 255, 255), part, v.Name)
+                    local h = esp(part, esp.Item, part, v.Name)
                     table.insert(esptable.items, h)
                 end
             end
@@ -470,7 +497,7 @@ RightGroup:AddToggle('pe', {
                 local doorIndex = string.format("%04d", doorCounter)
                 
                 -- Set up ESP with the door index in the format "Door [0001]"
-                local h = esp(door:WaitForChild("Door"), Color3.fromRGB(90, 255, 40), door, "Door [" .. doorIndex .. "]")
+                local h = esp(door:WaitForChild("Door"), esp.Door, door, "Door [" .. doorIndex .. "]")
                 table.insert(esptable.doors, h)
                 
                 door:WaitForChild("Door"):WaitForChild("Open").Played:Connect(function()
@@ -519,10 +546,10 @@ RightGroup:AddToggle('pe', {
                 if v:IsA("Model") then
                     task.wait(0.1)
                     if v.Name == "Wardrobe" or v.Name == "Locker_Large" then
-                        local h = esp(v.PrimaryPart, Color3.fromRGB(90, 255, 40), v.PrimaryPart, "Closet")
+                        local h = esp(v.PrimaryPart, esp.closet, v.PrimaryPart, "Closet")
                         table.insert(esptable.lockers, h) 
                     elseif (v.Name == "Rooms_Locker" or v.Name == "Rooms_Locker_Fridge") then
-                        local h = esp(v.PrimaryPart, Color3.fromRGB(90, 255, 40), v.PrimaryPart, "Locker")
+                        local h = esp(v.PrimaryPart, esp.Locker, v.PrimaryPart, "Locker")
                         table.insert(esptable.lockers, h) 
                     end
                 end
@@ -586,7 +613,7 @@ RightGroup:AddToggle('ee', {
                 if table.find(entitynames, v.Name) then
                     task.wait(0.1)
                     
-                    local h = esp(v, Color3.fromRGB(255, 25, 25), v.PrimaryPart, v.Name:gsub("Moving", ""))
+                    local h = esp(v, esp.Enity, v.PrimaryPart, v.Name:gsub("Moving", ""))
                     table.insert(esptable.entity, h)
                 end
             end)
@@ -599,7 +626,7 @@ RightGroup:AddToggle('ee', {
                         local fig = figuresetup:WaitForChild("FigureRagdoll")
                         task.wait(0.1)
                         
-                        local h = esp(fig, Color3.fromRGB(255, 25, 25), fig.PrimaryPart, "Figure")
+                        local h = esp(fig, esp.Enity, fig.PrimaryPart, "Figure")
                         table.insert(esptable.entity, h)
                     end 
                 else
@@ -609,7 +636,7 @@ RightGroup:AddToggle('ee', {
                         if v:IsA("Model") and table.find(entitynames, v.Name) then
                             task.wait(0.1)
                             
-                            local h = esp(v:WaitForChild("Base"), Color3.fromRGB(255, 25, 25), v.Base, "Snare")
+                            local h = esp(v:WaitForChild("Base"), esp.Enity, v.Base, "Snare")
                             table.insert(esptable.entity, h)
                         end
                     end
@@ -657,7 +684,7 @@ RightGroup:AddToggle('pe', {
         if state then
             local function check(v)
                 if v:IsA("Model") and v.Name == "LeverForGate" then
-                    local h = esp(v, Color3.fromRGB(90, 255, 40), v.PrimaryPart, "Lever")
+                    local h = esp(v, esp.Lever, v.PrimaryPart, "Lever")
                     table.insert(esptable.keys, h)
                     
                     v.PrimaryPart:WaitForChild("SoundToPlay").Played:Connect(function()
@@ -672,7 +699,7 @@ RightGroup:AddToggle('pe', {
                 if room:GetAttribute("RequiresKey") then
                     local key = room:FindFirstChild("KeyObtain", true)
                     if key then
-                        local h = esp(key, Color3.fromRGB(145, 100, 75), key.PrimaryPart, "Key")
+                        local h = esp(key, esp.key, key.PrimaryPart, "Key")
                         table.insert(esptable.keys, h)
                     end
                 end
@@ -706,63 +733,7 @@ RightGroup:AddToggle('pe', {
         end
     end
 })
-RightGroup:AddToggle('Esp', {
-    Text = 'Guiding Light ESP',
-    Default = false,
-    Tooltip = 'Walk through walls',
-    Callback = function(state)
-        if state then
-            _G.guidanceESPInstances = {}
-            flags.espGuidance = state
 
-            local function check(v)
-                if v:IsA("BasePart") and v.Name == "Guidance" then
-                    task.wait(0.1)
-                    local h = esp(v, currentESPColor, v, "Guidance")
-                    table.insert(esptable.guidances, h)
-                end
-            end
-
-            local function setup(camera)
-                if camera then
-                    local subaddcon
-                    subaddcon = camera.DescendantAdded:Connect(function(v)
-                        check(v)
-                    end)
-
-                    for _, v in pairs(camera:GetChildren()) do
-                        check(v)
-                    end
-
-                    task.spawn(function()
-                        repeat task.wait() until not flags.espGuidance
-                        subaddcon:Disconnect()
-                    end)
-                end
-            end
-
-            local addconnect
-            addconnect = workspace.CurrentCamera.ChildAdded:Connect(function(camera)
-                setup(camera)
-            end)
-
-            for _, camera in pairs(workspace.CurrentCamera:GetChildren()) do
-                setup(camera)
-            end
-
-            table.insert(_G.guidanceESPInstances, esptable)
-        else
-            if _G.guidanceESPInstances then
-                for _, instance in pairs(_G.guidanceESPInstances) do
-                    for _, v in pairs(instance.guidances) do
-                        v.delete()
-                    end
-                end
-                _G.guidanceESPInstances = nil
-            end
-        end
-    end
-})    
 RightGroup:AddToggle('pe', {
     Text = 'Book / Breaker esp',
     Default = false,
@@ -786,7 +757,7 @@ RightGroup:AddToggle('pe', {
                     if name ~= "" then
                         task.wait(0.1)
                         
-                        local h = esp(v, Color3.fromRGB(255, 255, 255), v.PrimaryPart, name)
+                        local h = esp(v, esp.Book, v.PrimaryPart, name)
                         table.insert(esptable.books, h)
                         
                         v.AncestryChanged:Connect(function()
