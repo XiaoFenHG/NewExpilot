@@ -1102,7 +1102,49 @@ end
 
 -- Speed Bypass Toggle
 Tab1:AddToggle('SpeedBypass', { Text = 'Speed Bypass' });
+Tab2:AddToggle('EnableJump', { Text = 'Can Jump' });
+Tab2:AddToggle('ThirdView', { Text = 'Third View Character' });
 
+Toggles.EnableJump:OnChanged(function(value)
+    game.Players.LocalPlayer.Character.Humanoid:SetAttribute("CanJump", value)
+end)
+
+
+local player = game.Players.LocalPlayer
+local camera = game.Workspace.CurrentCamera
+
+Toggles.ThirdView:OnChanged(function(value)
+    if value then
+        -- 设置第三人称视角
+        camera.CameraType = Enum.CameraType.Scriptable
+        camera.CameraSubject = player.Character.Humanoid
+
+        -- 更新摄像机位置
+        game:GetService("RunService").RenderStepped:Connect(function()
+            local character = player.Character
+            if character then
+                local head = character:FindFirstChild("Head")
+                if head then
+                    camera.CFrame = CFrame.new(head.Position + Vector3.new(0, 5, -10), head.Position)
+                end
+            end
+        end)
+
+        -- 确保头部存在并显示
+        game:GetService("RunService").RenderStepped:Connect(function()
+            local character = player.Character
+            if character then
+                local head = character:FindFirstChild("Head")
+                if head then
+                    head.Transparency = 0 -- 确保头部显示
+                end
+            end
+        end)
+    else
+        -- 恢复默认视角
+        camera.CameraType = Enum.CameraType.Custom
+    end
+end)
 Toggles.SpeedBypass:OnChanged(function(value)
     if value then
         while Toggles.SpeedBypass.Value and collisionClone do
