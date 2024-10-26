@@ -1372,7 +1372,7 @@ a:AddToggle('No Clip', {
     end
 })
 a:AddToggle('entityEvent', {
-    Text = 'Entity Avoid [Advanced And Test]',
+    Text = 'Entity Avoid [AT]',
     Default = false,
     Tooltip = 'Walk through walls while avoiding entities',
     Callback = function(state)
@@ -1385,7 +1385,7 @@ a:AddToggle('entityEvent', {
             if hidePrompt and hidePrompt:GetAttribute("Interactions") then
                 while hidePrompt.Enabled do
                     fireproximityprompt(hidePrompt)
-                    task.wait(0.1) -- Adjust this wait time for your needs
+                    task.wait(1) -- Adjust this wait time for your needs
                 end
             end
         end
@@ -1413,7 +1413,7 @@ a:AddToggle('entityEvent', {
         end
 
         local function avoidEntity(entity)
-            task.wait(3.5)
+            task.wait(0.1)
             for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
                 processContainers(room, true)
             end
