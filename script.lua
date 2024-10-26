@@ -1383,15 +1383,18 @@ a:AddToggle('entityEvent', {
             local flags = flags or {} -- Prevent errors
             local plr = game.Players.LocalPlayer -- Prevent errors
 
-            local function avoidEntity()
-                task.wait(3)
-                local function fireHidePrompt(container)
-                    local hidePrompt = container:FindFirstChild("HidePrompt")
-                    if hidePrompt then
+            local function fireHidePrompt(container)
+                local hidePrompt = container:FindFirstChild("HidePrompt")
+                if hidePrompt then
+                    while hidePrompt.Enabled do
                         fireproximityprompt(hidePrompt)
+                        task.wait(0.1) -- Adjust the wait time as needed
                     end
                 end
+            end
 
+            local function avoidEntity()
+                task.wait(3.5)
                 for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
                     local assets = room:FindFirstChild("Assets")
                     if assets then
@@ -1402,6 +1405,20 @@ a:AddToggle('entityEvent', {
                             end
                         end
                     end
+                end
+            end
+
+            local function enableHidePrompt(container)
+                local hidePrompt = container:FindFirstChild("HidePrompt")
+                if hidePrompt then
+                    hidePrompt.Enabled = true
+                end
+            end
+
+            local function disableHidePrompt(container)
+                local hidePrompt = container:FindFirstChild("HidePrompt")
+                if hidePrompt then
+                    hidePrompt.Enabled = false
                 end
             end
 
@@ -1419,14 +1436,6 @@ a:AddToggle('entityEvent', {
                     child.AncestryChanged:Connect(function(_, parent)
                         if not parent then
                             -- Entity has been removed from the workspace
-                            -- Cancel the fireproximityprompt action
-                            local function disableHidePrompt(container)
-                                local hidePrompt = container:FindFirstChild("HidePrompt")
-                                if hidePrompt then
-                                    hidePrompt.Enabled = false
-                                end
-                            end
-
                             for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
                                 local assets = room:FindFirstChild("Assets")
                                 if assets then
@@ -1434,6 +1443,20 @@ a:AddToggle('entityEvent', {
                                         local container = assets:FindFirstChild(containerName)
                                         if container then
                                             disableHidePrompt(container)
+                                        end
+                                    end
+                                end
+                            end
+                        else
+                            -- Entity has reappeared in the workspace
+                            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                                local assets = room:FindFirstChild("Assets")
+                                if assets then
+                                    for _, containerName in pairs({"Wardrobe", "Backdoor_Wardrobe", "Rooms_Locker"}) do
+                                        local container = assets:FindFirstChild(containerName)
+                                        if container then
+                                            enableHidePrompt(container)
+                                            fireHidePrompt(container)
                                         end
                                     end
                                 end
