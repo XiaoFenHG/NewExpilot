@@ -649,7 +649,7 @@ RightGroup:AddToggle('ee', {
         if state then
             _G.entityESPInstances = {}
             flags.esprush = state
-            local entitynames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "Eyes", "JeffTheKiller", "SeekMoving"}
+            local entitynames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "Eyes", "JeffTheKiller", "SeekMoving", "GiggleCeiling"}
 	    
             local addconnect
             addconnect = workspace.ChildAdded:Connect(function(v)
@@ -717,65 +717,7 @@ RightGroup:AddToggle('ee', {
         end
     end
 })
-RightGroup:AddToggle('pe', {
-    Text = 'Lever / Key esp',
-    Default = false,
-    Tooltip = 'Walk through walls',
-    Callback = function(state)
-        flags.espkeys = state
-        
-        if state then
-            local function check(v)
-                if v:IsA("Model") and v.Name == "LeverForGate" then
-                    local h = esp(v, Color3.fromRGB(90, 255, 40), v.PrimaryPart, "Lever")
-                    table.insert(esptable.keys, h)
-                    
-                    v.PrimaryPart:WaitForChild("SoundToPlay").Played:Connect(function()
-                        h.delete()
-                    end)
-                end
-            end
-            
-            local function setup(room)
-                local assets = room:WaitForChild("Assets")
-                
-                if room:GetAttribute("RequiresKey") then
-                    local key = room:FindFirstChild("KeyObtain", true)
-                    if key then
-                        local h = esp(key, Color3.fromRGB(145, 100, 75), key.PrimaryPart, "Key")
-                        table.insert(esptable.keys, h)
-                    end
-                end
-                
-                assets.DescendantAdded:Connect(function(v)
-                    check(v)
-                end)
-                    
-                for i, v in pairs(assets:GetDescendants()) do
-                    check(v)
-                end
-            end
-            
-            local addconnect
-            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
-                setup(room)
-            end)
-            
-            for i, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                if room:FindFirstChild("Assets") then
-                    setup(room)
-                end
-            end
-            
-            repeat task.wait() until not flags.espkeys
-            addconnect:Disconnect()
-            
-            for i, v in pairs(esptable.keys) do
-                v.delete()
-            end
-        end
-    end
-})
+
 RightGroup:AddToggle('ESP for FuseObtain', {
     Text = 'FuseObtain ESP',
     Default = false,
