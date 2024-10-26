@@ -189,6 +189,7 @@ local flags = {
 	espbooks = false,
 	instapp2 = false,
 	Keyaura = false,
+	itemaura = false,
 	draweraura = false,
 	espGeneratorsAndFuses = false
 }
@@ -388,43 +389,47 @@ RightGroup:AddToggle('pe', {
         end
     end
 })
-RightGroup:AddToggle('pe', {
-    Text = 'GeneratorMain + FuseObtain ESP',
+
+RightGroup:AddToggle('Monitor MinesGenerator', {
+    Text = 'Generator esp',
     Default = false,
-    Tooltip = 'Highlight GeneratorMain and FuseObtain',
+    Tooltip = 'all MinesGenerator in CurrentRooms',
     Callback = function(state)
+        local customSuffix = "MinesGeneratorMonitor" -- 自定义后缀
+        local flagsName = "monitorMinesGenerator" .. customSuffix
+        local espTableName = "minesGeneratorESPInstances" .. customSuffix
+
         if state then
-            _G.espInstances = {}
-            flags.espGeneratorsAndFuses = state
+            _G[espTableName] = {}
+            _G[flagsName] = state
+
+            local function check(v)
+                if v:IsA("Model") and v.Name == "MinesGenerator" then
+		    local generatorMain = v:FindFirstChild("GeneratorMain")
+                    if generatorMain then
+                        local h = esp(generatorMain, Color3.fromRGB(0, 255, 0), generatorMain, "Generator")
+                        table.insert(esptable.minesGeneratorESP, h)
+                    end
+                end
+            end
 
             local function setup(room)
-                local assetsFolder = room:FindFirstChild("Assets")
-                if assetsFolder then
-                    -- 查找 GeneratorMain
-                    local generatorMain = assetsFolder:FindFirstChild("GeneratorMain")
-                    if generatorMain then
-                        -- 设置 ESP
-                        local h = esp(generatorMain, Color3.fromRGB(255, 0, 0), generatorMain, "GeneratorMain")
-                        table.insert(esptable.generators, h)
-                        
-                        generatorMain.AncestryChanged:Connect(function()
-                            h.delete()
-                        end)
+                local assets = room:WaitForChild("Assets")
+
+                if assets then
+                    local subaddcon
+                    subaddcon = assets.DescendantAdded:Connect(function(v)
+                        check(v)
+                    end)
+
+                    for i, v in pairs(assets:GetDescendants()) do
+                        check(v)
                     end
 
-                    -- 查找 FuseObtain
-                    local fuseObtain = assetsFolder:FindFirstChild("FuseObtain")
-                    if fuseObtain then
-                        -- 等待 FuseObtain 的 Hitbox 子对象
-                        local hitbox = fuseObtain:WaitForChild("Hitbox")
-                        -- 设置 ESP
-                        local h = esp(hitbox, Color3.fromRGB(0, 0, 255), fuseObtain, "FuseObtain")
-                        table.insert(esptable.fuses, h)
-                        
-                        fuseObtain.AncestryChanged:Connect(function()
-                            h.delete()
-                        end)
-                    end
+                    task.spawn(function()
+                        repeat task.wait() until not _G[flagsName]
+                        subaddcon:Disconnect()
+                    end)
                 end
             end
 
@@ -432,30 +437,25 @@ RightGroup:AddToggle('pe', {
             addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
                 setup(room)
             end)
-            
+
             for i, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                if room:FindFirstChild("Assets") then
-                    setup(room)
-                end
+                setup(room)
             end
 
-            table.insert(_G.espInstances, esptable)
-
+            table.insert(_G[espTableName], esptable)
         else
-            if _G.espInstances then
-                for _, instance in pairs(_G.espInstances) do
-                    for _, v in pairs(instance.generators or {}) do
-                        v.delete()
-                    end
-                    for _, v in pairs(instance.fuses or {}) do
+            if _G[espTableName] then
+                for _, instance in pairs(_G[espTableName]) do
+                    for _, v in pairs(instance.minesGeneratorESP) do
                         v.delete()
                     end
                 end
-                _G.espInstances = nil
+                _G[espTableName] = nil
             end
         end
     end
 })
+
 RightGroup:AddToggle('pe', {
     Text = 'Item esp',
     Default = false,
@@ -772,6 +772,71 @@ RightGroup:AddToggle('pe', {
             
             for i, v in pairs(esptable.keys) do
                 v.delete()
+            end
+        end
+    end
+})
+RightGroup:AddToggle('ESP for FuseObtain', {
+    Text = 'FuseObtain ESP',
+    Default = false,
+    Tooltip = 'Enable ESP for FuseObtain Hitbox',
+    Callback = function(state)
+        local customSuffix = "FuseObtainESP" -- 自定义后缀
+        local flagsName = "espFuseObtain" .. customSuffix
+        local espTableName = "fuseObtainESPInstances" .. customSuffix
+
+        if state then
+            _G[espTableName] = {}
+            _G[flagsName] = state
+
+            local function check(v)
+                if v:IsA("Model") and v.Name == "FuseObtain" then
+                    local hitbox = v:FindFirstChild("Hitbox")
+                    if hitbox then
+                        local h = esp(hitbox, Color3.fromRGB(255, 0, 0), hitbox, "FuseKey")
+                        table.insert(esptable.fuseESP, h)
+                    end
+                end
+            end
+
+            local function setup(room)
+                local assets = room:WaitForChild("Assets")
+
+                if assets then
+                    local subaddcon
+                    subaddcon = assets.DescendantAdded:Connect(function(v)
+                        check(v)
+                    end)
+
+                    for i, v in pairs(assets:GetDescendants()) do
+                        check(v)
+                    end
+
+                    task.spawn(function()
+                        repeat task.wait() until not _G[flagsName]
+                        subaddcon:Disconnect()
+                    end)
+                end
+            end
+
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+
+            for i, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                setup(room)
+            end
+
+            table.insert(_G[espTableName], esptable)
+        else
+            if _G[espTableName] then
+                for _, instance in pairs(_G[espTableName]) do
+                    for _, v in pairs(instance.fuseESP) do
+                        v.delete()
+                    end
+                end
+                _G[espTableName] = nil
             end
         end
     end
@@ -1206,6 +1271,173 @@ a:AddToggle('pe', {
         end		
     end
 })
+local function handlePrompt(prompt)
+    local interactions = prompt:GetAttribute("Interactions")
+    if not interactions then
+        task.spawn(function()
+            while flags.itemaura and not prompt:GetAttribute("Interactions") do
+                task.wait(0.1)
+                if game.Players.LocalPlayer:DistanceFromCharacter(prompt.Parent.PrimaryPart.Position) <= 12 then
+                    fireproximityprompt(prompt)
+                end
+            end
+        end)
+    end
+end
+
+-- Function to check items and handle prompts
+local function check(v)
+    if v:IsA("Model") and (v:GetAttribute("Pickup") or v:GetAttribute("PropType")) then
+        task.wait(0.1)
+        local part = v:FindFirstChild("Handle") or v:FindFirstChild("Prop")
+        if part then
+            -- Check if the item has a ModulePrompt
+            local prompt = v:FindFirstChild("ModulePrompt")
+            if prompt then
+                handlePrompt(prompt)
+            end
+        end
+    end
+end
+
+-- Function to setup items in a room
+local function setup(room)
+    local assets = room:WaitForChild("Assets")
+    
+    if assets then  
+        local subaddcon
+        subaddcon = assets.DescendantAdded:Connect(function(v)
+            check(v)
+        end)
+        
+        for _, v in pairs(assets:GetDescendants()) do
+            check(v)
+        end
+        
+        -- Manage the disconnect when item aura is turned off
+        return subaddcon
+    end
+end
+
+-- Function to start room detection
+local function startRoomDetection()
+    -- Connect to detect new rooms being added
+    local roomAddedConnection
+    roomAddedConnection = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+        if flags.itemaura then
+            setup(room)
+        end
+    end)
+    
+    -- Setup existing rooms
+    for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+        if room:FindFirstChild("Assets") then
+            setup(room)
+        end
+    end
+    
+    -- Return the connection to manage its lifecycle
+    return roomAddedConnection
+end
+
+a:AddToggle('No Clip', {
+    Text = 'Item aura',
+    Default = false,
+    Tooltip = 'Walk through walls',
+    Callback = function(state)
+        flags.itemaura = state  
+        
+        if flags.itemaura then
+            -- Start room detection
+            local roomAddedConnection = startRoomDetection()
+            
+            -- Manage disconnection when item aura is turned off
+            task.spawn(function()
+                repeat task.wait() until not flags.itemaura
+                roomAddedConnection:Disconnect()
+            end)
+        else
+            -- Stop room detection
+            if roomAddedConnection then
+                roomAddedConnection:Disconnect()
+            end
+            -- Clear or reset any related data here if needed
+        end
+    end
+})
+a:AddToggle('No Clip', {
+    Text = 'Chestbox + Drawers aura',
+    Default = false,
+    Tooltip = 'Walk through walls',
+    Callback = function(state)
+        if state then
+            -- open
+            autoInteract = true
+
+            -- getplayer
+            local player = game.Players.LocalPlayer
+
+            -- check
+            workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                room.DescendantAdded:Connect(function(descendant)
+                    if descendant:IsA("Model") then
+                        local prompt = nil
+                        if descendant.Name == "DrawerContainer" then
+                            prompt = descendant:WaitForChild("Knobs"):WaitForChild("ActivateEventPrompt")
+                        elseif descendant.Name:sub(1, 8) == "ChestBox" or descendant.Name == "RolltopContainer" then
+                            prompt = descendant:WaitForChild("ActivateEventPrompt")
+                        end
+
+                        if prompt then
+                            local interactions = prompt:GetAttribute("Interactions")
+                            if not interactions then
+                                task.spawn(function()
+                                    while autoInteract and not prompt:GetAttribute("Interactions") do
+                                        task.wait(0.1)
+                                        if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
+                                            fireproximityprompt(prompt)
+                                        end
+                                    end
+                                end)
+                            end
+                        end
+                    end
+                end)
+            end)
+
+            -- check2
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                for _, descendant in pairs(room:GetDescendants()) do
+                    if descendant:IsA("Model") then
+                        local prompt = nil
+                        if descendant.Name == "DrawerContainer" then
+                            prompt = descendant:WaitForChild("Knobs"):WaitForChild("ActivateEventPrompt")
+                        elseif descendant.Name:sub(1, 8) == "ChestBox" or descendant.Name == "RolltopContainer" then
+                            prompt = descendant:WaitForChild("ActivateEventPrompt")
+                        end
+
+                        if prompt then
+                            local interactions = prompt:GetAttribute("Interactions")
+                            if not interactions then
+                                task.spawn(function()
+                                    while autoInteract and not prompt:GetAttribute("Interactions") do
+                                        task.wait(0.1)
+                                        if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
+                                            fireproximityprompt(prompt)
+                                        end
+                                    end
+                                end)
+                            end
+                        end
+                    end
+                end
+            end
+        else
+            -- close
+            autoInteract = false
+        end
+    end
+})
 a:AddToggle('hi', {
     Text = 'Loot Prompt[F2 Test]',
     Default = false,
@@ -1220,52 +1452,33 @@ Toggles.hi:OnChanged(function(value)
             -- 查找 Assets 文件夹中的 Locker_Small
             local lockerSmall = assetsFolder:FindFirstChild("Locker_Small")
             if lockerSmall then
-                -- 查找 Locker_Small 中的 Prompt
-                local prompt = lockerSmall:FindFirstChildWhichIsA("ProximityPrompt")
-                if prompt and value then
-                    -- 触发 Prompt 的点击事件
-                    prompt:InputHoldBegin()
-                    wait(1) -- 等待一秒以确保触发
-                    prompt:InputHoldEnd()
+                -- 查找 Locker_Small 中的 Door
+                local door = lockerSmall:FindFirstChild("Door")
+                if door then
+                    -- 查找 Door 中的 ActivateEventPrompt
+                    local prompt = door:FindFirstChild("ActivateEventPrompt")
+                    if prompt then
+                        -- 使用 fireproximityprompt 函数触发 ActivateEventPrompt 的点击事件
+                        fireproximityprompt(prompt)
+                        print("ActivateEventPrompt fired for", door.Name)
+                    end
                 end
             end
 
             -- 查找 Assets 文件夹中的 FuseObtain
-            local fuseObtain = assetsFolder:FindFirstChild("FuseObtain")
-            if fuseObtain then
-                -- 查找 FuseObtain 中的 Prompt
-                local prompt = fuseObtain:FindFirstChildWhichIsA("ProximityPrompt")
-                if prompt and value then
-                    -- 触发 Prompt 的点击事件
-                    prompt:InputHoldBegin()
-                    wait(1) -- 等待一秒以确保触发
-                    prompt:InputHoldEnd()
-                end
-            end
-
+        
             -- 查找 Assets 文件夹中的 GeneratorMain
-            local generatorMain = assetsFolder:FindFirstChild("GeneratorMain")
-            if generatorMain then
-                -- 查找 GeneratorMain 中的 Prompt
-                local prompt = generatorMain:FindFirstChildWhichIsA("ProximityPrompt")
-                if prompt and value then
-                    -- 触发 Prompt 的点击事件
-                    prompt:InputHoldBegin()
-                    wait(1) -- 等待一秒以确保触发
-                    prompt:InputHoldEnd()
-                end
-            end
+            
 
             -- 查找 Assets 文件夹中的 Toolbox
             local toolbox = assetsFolder:FindFirstChild("Toolbox")
             if toolbox then
-                -- 查找 Toolbox 中的 Prompt
-                local prompt = toolbox:FindFirstChildWhichIsA("ProximityPrompt")
-                if prompt and value then
-                    -- 触发 Prompt 的点击事件
-                    prompt:InputHoldBegin()
-                    wait(1) -- 等待一秒以确保触发
-                    prompt:InputHoldEnd()
+                -- 查找 Toolbox 中的 ActivateEventPrompt
+                local prompt = toolbox:FindFirstChild("ActivateEventPrompt")
+                if prompt then
+                    -- 使用 fireproximityprompt 函数触发 ActivateEventPrompt 的点击事件
+                    fireproximityprompt(prompt)
+                    print("ActivateEventPrompt fired for", toolbox.Name)
                 end
             end
         end
