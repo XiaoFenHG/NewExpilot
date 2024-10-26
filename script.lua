@@ -713,7 +713,7 @@ RightGroup:AddToggle('ee', {
         if state then
             _G.entityESPInstances = {}
             flags.esprush = state
-            local entitynames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "Eyes", "JeffTheKiller", "SeekMoving", "GiggleCeiling"}
+            local entitynames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "Eyes", "JeffTheKiller", "SeekMoving", "GiggleCeiling", "BackdoorRush"}
 	    
             local addconnect
             addconnect = workspace.ChildAdded:Connect(function(v)
@@ -1063,7 +1063,7 @@ RightGroup1:AddToggle('entityEvent', {
     Tooltip = 'Walk through walls',
     Callback = function(state)
         if state then
-            local entityNames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "A90", "Eyes", "JeffTheKiller"} -- Entity names
+            local entityNames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "A90", "Eyes", "JeffTheKiller", "BackdoorRush"} -- Entity names
 
             -- Ensure flags and plr are defined
             local flags = flags or {} -- Prevent errors
