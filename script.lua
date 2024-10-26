@@ -189,7 +189,8 @@ local flags = {
 	espbooks = false,
 	instapp2 = false,
 	Keyaura = false,
-	draweraura = false
+	draweraura = false,
+	espGeneratorsAndFuses = false
 }
 local esptable = {
     entity = {},
@@ -201,7 +202,9 @@ local esptable = {
     keys = {},
     loc = {},
     lol = {},
-    guidances = {}
+    guidances = {},
+    generators = {},
+    fuses = {}
 }
 
 local Library = loadstring(game:HttpGet("https://github.com/Drop56796/CreepyEyeHub/blob/main/UI%20Style%20theme.lua?raw=true"))()
@@ -385,7 +388,74 @@ RightGroup:AddToggle('pe', {
         end
     end
 })
+RightGroup:AddToggle('pe', {
+    Text = 'GeneratorMain + FuseObtain ESP',
+    Default = false,
+    Tooltip = 'Highlight GeneratorMain and FuseObtain',
+    Callback = function(state)
+        if state then
+            _G.espInstances = {}
+            flags.espGeneratorsAndFuses = state
 
+            local function setup(room)
+                local assetsFolder = room:FindFirstChild("Assets")
+                if assetsFolder then
+                    -- 查找 GeneratorMain
+                    local generatorMain = assetsFolder:FindFirstChild("GeneratorMain")
+                    if generatorMain then
+                        -- 设置 ESP
+                        local h = esp(generatorMain, Color3.fromRGB(255, 0, 0), generatorMain, "GeneratorMain")
+                        table.insert(esptable.generators, h)
+                        
+                        generatorMain.AncestryChanged:Connect(function()
+                            h.delete()
+                        end)
+                    end
+
+                    -- 查找 FuseObtain
+                    local fuseObtain = assetsFolder:FindFirstChild("FuseObtain")
+                    if fuseObtain then
+                        -- 等待 FuseObtain 的 Hitbox 子对象
+                        local hitbox = fuseObtain:WaitForChild("Hitbox")
+                        -- 设置 ESP
+                        local h = esp(hitbox, Color3.fromRGB(0, 0, 255), fuseObtain, "FuseObtain")
+                        table.insert(esptable.fuses, h)
+                        
+                        fuseObtain.AncestryChanged:Connect(function()
+                            h.delete()
+                        end)
+                    end
+                end
+            end
+
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for i, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                if room:FindFirstChild("Assets") then
+                    setup(room)
+                end
+            end
+
+            table.insert(_G.espInstances, esptable)
+
+        else
+            if _G.espInstances then
+                for _, instance in pairs(_G.espInstances) do
+                    for _, v in pairs(instance.generators or {}) do
+                        v.delete()
+                    end
+                    for _, v in pairs(instance.fuses or {}) do
+                        v.delete()
+                    end
+                end
+                _G.espInstances = nil
+            end
+        end
+    end
+})
 RightGroup:AddToggle('pe', {
     Text = 'Item esp',
     Default = false,
@@ -1102,49 +1172,7 @@ end
 
 -- Speed Bypass Toggle
 Tab1:AddToggle('SpeedBypass', { Text = 'Speed Bypass' });
-Tab2:AddToggle('EnableJump', { Text = 'Can Jump' });
-Tab2:AddToggle('ThirdView', { Text = 'Third View Character' });
 
-Toggles.EnableJump:OnChanged(function(value)
-    game.Players.LocalPlayer.Character.Humanoid:SetAttribute("CanJump", value)
-end)
-
-
-local player = game.Players.LocalPlayer
-local camera = game.Workspace.CurrentCamera
-
-Toggles.ThirdView:OnChanged(function(value)
-    if value then
-        -- 设置第三人称视角
-        camera.CameraType = Enum.CameraType.Scriptable
-        camera.CameraSubject = player.Character.Humanoid
-
-        -- 更新摄像机位置
-        game:GetService("RunService").RenderStepped:Connect(function()
-            local character = player.Character
-            if character then
-                local head = character:FindFirstChild("Head")
-                if head then
-                    camera.CFrame = CFrame.new(head.Position + Vector3.new(0, 5, -10), head.Position)
-                end
-            end
-        end)
-
-        -- 确保头部存在并显示
-        game:GetService("RunService").RenderStepped:Connect(function()
-            local character = player.Character
-            if character then
-                local head = character:FindFirstChild("Head")
-                if head then
-                    head.Transparency = 0 -- 确保头部显示
-                end
-            end
-        end)
-    else
-        -- 恢复默认视角
-        camera.CameraType = Enum.CameraType.Custom
-    end
-end)
 Toggles.SpeedBypass:OnChanged(function(value)
     if value then
         while Toggles.SpeedBypass.Value and collisionClone do
