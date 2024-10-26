@@ -191,7 +191,8 @@ local flags = {
 	Keyaura = false,
 	itemaura = false,
 	draweraura = false,
-	espGeneratorsAndFuses = false
+	espGeneratorsAndFuses = false,
+	timerLeverFlag = false
 }
 local esptable = {
     entity = {},
@@ -205,7 +206,8 @@ local esptable = {
     lol = {},
     guidances = {},
     generators = {},
-    fuses = {}
+    fuses = {},
+    timerLevers = {}
 }
 
 local Library = loadstring(game:HttpGet("https://github.com/Drop56796/CreepyEyeHub/blob/main/UI%20Style%20theme.lua?raw=true"))()
@@ -578,6 +580,68 @@ RightGroup:AddToggle('pe', {
     end
 })
 RightGroup:AddToggle('pe', {
+    Text = 'Timer Lever esp',
+    Default = false,
+    Tooltip = 'Walk through walls',
+    Callback = function(state)
+        if state then
+            _G.timerLeverESPInstances = {}
+            local timerLeverFlag = state
+            
+            local function check(v)
+                if v:IsA("Model") then
+                    task.wait(0.1)
+                    if v.Name == "TimerLever" then
+                        local h = esp(v.PrimaryPart, Color3.fromRGB(90, 255, 40), v.PrimaryPart, "Timer Lever")
+                        table.insert(espTable.timerLevers, h) 
+                    end
+                end
+            end
+                
+            local function setup(room)
+                local assets = room:WaitForChild("Assets")
+                
+                if assets then
+                    local subaddcon
+                    subaddcon = assets.DescendantAdded:Connect(function(v)
+                        check(v) 
+                    end)
+                    
+                    for _, v in pairs(assets:GetDescendants()) do
+                        check(v)
+                    end
+                    
+                    task.spawn(function()
+                        repeat task.wait() until not timerLeverFlag
+                        subaddcon:Disconnect()  
+                    end) 
+                end 
+            end
+            
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                setup(room) 
+            end
+
+            table.insert(_G.timerLeverESPInstances, espTable)
+
+        else
+            if _G.timerLeverESPInstances then
+                for _, instance in pairs(_G.timerLeverESPInstances) do
+                    for _, v in pairs(instance.timerLevers) do
+                        v.delete()
+                    end
+                end
+                _G.timerLeverESPInstances = nil
+            end
+        end
+    end
+})
+RightGroup:AddToggle('pe', {
     Text = 'Closet Locker esp',
     Default = false,
     Tooltip = 'Walk through walls',
@@ -588,7 +652,7 @@ RightGroup:AddToggle('pe', {
 	    local function check(v)
                 if v:IsA("Model") then
                     task.wait(0.1)
-                    if v.Name == "Wardrobe" or v.Name == "Locker_Large" then
+                    if v.Name == "Wardrobe" or v.Name == "Locker_Large" or v.Name == "Backdoor_Wardrobe" then
                         local h = esp(v.PrimaryPart, Color3.fromRGB(90, 255, 40), v.PrimaryPart, "Closet")
                         table.insert(esptable.lockers, h) 
                     elseif (v.Name == "Rooms_Locker" or v.Name == "Rooms_Locker_Fridge") then
