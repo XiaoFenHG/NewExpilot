@@ -1371,6 +1371,95 @@ a:AddToggle('No Clip', {
         end
     end
 })
+a:AddToggle('entityEvent', {
+    Text = 'Entity Avoid [test]',
+    Default = false,
+    Tooltip = 'Walk through walls',
+    Callback = function(state)
+        if state then
+            local entityNames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "A90", "Eyes", "JeffTheKiller", "BackdoorRush"} -- Entity names
+
+            -- Ensure flags and plr are defined
+            local flags = flags or {} -- Prevent errors
+            local plr = game.Players.LocalPlayer -- Prevent errors
+
+            local function avoidEntity()
+                task.wait(3)
+                local function fireHidePrompt(container)
+                    local hidePrompt = container:FindFirstChild("HidePrompt")
+                    if hidePrompt then
+                        fireproximityprompt(hidePrompt)
+                    end
+                end
+
+                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                    local assets = room:FindFirstChild("Assets")
+                    if assets then
+                        for _, containerName in pairs({"Wardrobe", "Backdoor_Wardrobe", "Rooms_Locker"}) do
+                            local container = assets:FindFirstChild(containerName)
+                            if container then
+                                fireHidePrompt(container)
+                            end
+                        end
+                    end
+                end
+            end
+
+            local function onChildAdded(child)
+                if table.find(entityNames, child.Name) then
+                    repeat
+                        task.wait()
+                    until plr:DistanceFromCharacter(child:GetPivot().Position) < 1000 or not child:IsDescendantOf(workspace)
+                    
+                    if child:IsDescendantOf(workspace) then
+                        avoidEntity()
+                    end
+
+                    -- Monitor for entity disappearance
+                    child.AncestryChanged:Connect(function(_, parent)
+                        if not parent then
+                            -- Entity has been removed from the workspace
+                            -- Cancel the fireproximityprompt action
+                            local function disableHidePrompt(container)
+                                local hidePrompt = container:FindFirstChild("HidePrompt")
+                                if hidePrompt then
+                                    hidePrompt.Enabled = false
+                                end
+                            end
+
+                            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                                local assets = room:FindFirstChild("Assets")
+                                if assets then
+                                    for _, containerName in pairs({"Wardrobe", "Backdoor_Wardrobe", "Rooms_Locker"}) do
+                                        local container = assets:FindFirstChild(containerName)
+                                        if container then
+                                            disableHidePrompt(container)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                end
+            end
+
+            -- Infinite loop to keep the script running and check the hintrush flag
+            local running = true
+            while running do
+                local connection = workspace.ChildAdded:Connect(onChildAdded)
+                
+                repeat
+                    task.wait(1) -- Adjust wait time as needed
+                until not flags.hintrush or not running
+                
+                connection:Disconnect()
+            end 
+        else 
+            -- Turn off notifications or perform other cleanup if needed
+            running = false
+        end
+    end
+})
 a:AddToggle('No Clip', {
     Text = 'Chestbox + Drawers aura',
     Default = false,
