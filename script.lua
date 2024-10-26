@@ -1178,6 +1178,71 @@ a:AddToggle('pe', {
         end		
     end
 })
+a:AddToggle('hi', {
+    Text = 'Loot Prompt[F2 Test]',
+    Default = false,
+    Tooltip = 'Walk through walls',
+})
+Toggles.hi:OnChanged(function(value)
+    -- 遍历工作区中的 CurrentRooms
+    for _, room in pairs(game.Workspace.CurrentRooms:GetChildren()) do
+        -- 查找房间中的 Assets 文件夹
+        local assetsFolder = room:FindFirstChild("Assets")
+        if assetsFolder then
+            -- 查找 Assets 文件夹中的 Locker_Small
+            local lockerSmall = assetsFolder:FindFirstChild("Locker_Small")
+            if lockerSmall then
+                -- 查找 Locker_Small 中的 Prompt
+                local prompt = lockerSmall:FindFirstChildWhichIsA("ProximityPrompt")
+                if prompt and value then
+                    -- 触发 Prompt 的点击事件
+                    prompt:InputHoldBegin()
+                    wait(1) -- 等待一秒以确保触发
+                    prompt:InputHoldEnd()
+                end
+            end
+
+            -- 查找 Assets 文件夹中的 FuseObtain
+            local fuseObtain = assetsFolder:FindFirstChild("FuseObtain")
+            if fuseObtain then
+                -- 查找 FuseObtain 中的 Prompt
+                local prompt = fuseObtain:FindFirstChildWhichIsA("ProximityPrompt")
+                if prompt and value then
+                    -- 触发 Prompt 的点击事件
+                    prompt:InputHoldBegin()
+                    wait(1) -- 等待一秒以确保触发
+                    prompt:InputHoldEnd()
+                end
+            end
+
+            -- 查找 Assets 文件夹中的 GeneratorMain
+            local generatorMain = assetsFolder:FindFirstChild("GeneratorMain")
+            if generatorMain then
+                -- 查找 GeneratorMain 中的 Prompt
+                local prompt = generatorMain:FindFirstChildWhichIsA("ProximityPrompt")
+                if prompt and value then
+                    -- 触发 Prompt 的点击事件
+                    prompt:InputHoldBegin()
+                    wait(1) -- 等待一秒以确保触发
+                    prompt:InputHoldEnd()
+                end
+            end
+
+            -- 查找 Assets 文件夹中的 Toolbox
+            local toolbox = assetsFolder:FindFirstChild("Toolbox")
+            if toolbox then
+                -- 查找 Toolbox 中的 Prompt
+                local prompt = toolbox:FindFirstChildWhichIsA("ProximityPrompt")
+                if prompt and value then
+                    -- 触发 Prompt 的点击事件
+                    prompt:InputHoldBegin()
+                    wait(1) -- 等待一秒以确保触发
+                    prompt:InputHoldEnd()
+                end
+            end
+        end
+    end
+end)
 a:AddToggle('No Clip', {
     Text = 'Lever aura',
     Default = false,
