@@ -1378,104 +1378,45 @@ a:AddToggle('entityEvent', {
     Callback = function(state)
         if state then
             local entityNames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "A90", "Eyes", "JeffTheKiller", "BackdoorRush"}
-            local flags = flags or {}
             local plr = game.Players.LocalPlayer
-            local currentEntity = nil
+            local RunService = game:GetService("RunService")
+            local collisionPart = plr.Character:WaitForChild("Collision")
+            local lastPosition = plr.Character.HumanoidRootPart.Position
 
-            local function fireHidePrompt(container)
-                local hidePrompt = container:FindFirstChild("HidePrompt")
-                if hidePrompt then
-                    while hidePrompt.Enabled do
-                        fireproximityprompt(hidePrompt)
-                        task.wait(0.1)
-                    end
+            local function onCollision()
+                plr.Character.HumanoidRootPart.CFrame = lastPosition + Vector3.new(0, 50, 0)
+            end
+
+            local function checkCollisionMovement()
+                if collisionPart.Position ~= lastPosition then
+                    lastPosition = collisionPart.Position
+                    onCollision()
                 end
             end
 
-            local function avoidEntity()
-                task.wait(0.1)
-                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                    local assets = room:FindFirstChild("Assets")
-                    if assets then
-                        for _, containerName in pairs({"Wardrobe", "Backdoor_Wardrobe", "Rooms_Locker"}) do
-                            local container = assets:FindFirstChild(containerName)
-                            if container then
-                                fireHidePrompt(container)
-                            end
-                        end
-                    end
-                end
-            end
-
-            local function checkDistanceAndClick(entity)
-                local distance = plr:DistanceFromCharacter(entity:GetPivot().Position)
-                if distance < 50 then
-                    fireHidePrompt(entity) -- Trigger hide prompt
-                end
-            end
+            RunService.Heartbeat:Connect(checkCollisionMovement)
 
             local function onChildAdded(child)
                 if table.find(entityNames, child.Name) then
-                    currentEntity = child -- Record the entity
-
-                    local isMoving = true
-
-                    -- Check distance and handle entity actions
-                    repeat
-                        task.wait(0.1)
-                        isMoving = child:IsDescendantOf(workspace) and plr:DistanceFromCharacter(child:GetPivot().Position) < 1000
-                        if isMoving then
-                            checkDistanceAndClick(child) -- Check distance and click if needed
-                            avoidEntity()
-                        end
-                    until not isMoving or not child:IsDescendantOf(workspace)
-
-                    -- Monitor for entity disappearance
-                    child.AncestryChanged:Connect(function(_, parent)
-                        if not parent then
-                            currentEntity = nil -- Clear recorded entity
-                            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                                local assets = room:FindFirstChild("Assets")
-                                if assets then
-                                    for _, containerName in pairs({"Wardrobe", "Backdoor_Wardrobe", "Rooms_Locker"}) do
-                                        local container = assets:FindFirstChild(containerName)
-                                        if container then
-                                            disableHidePrompt(container)
-                                        end
-                                    end
-                                end
+                    -- 检测实体的位置
+                    local function checkDistance()
+                        while child:IsDescendantOf(workspace) do
+                            local distance = plr:DistanceFromCharacter(child:GetPivot().Position)
+                            if distance < 50 then  -- 可以调整这个距离
+                                lastPosition = plr.Character.HumanoidRootPart.Position  -- 记录当前位置
+                                plr.Character.HumanoidRootPart.CFrame = child:GetPivot() + Vector3.new(0, 50, 0)  -- 传送到新位置
                             end
-                        else
-                            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                                local assets = room:FindFirstChild("Assets")
-                                if assets then
-                                    for _, containerName in pairs({"Wardrobe", "Backdoor_Wardrobe", "Rooms_Locker"}) do
-                                        local container = assets:FindFirstChild(containerName)
-                                        if container then
-                                            enableHidePrompt(container)
-                                            fireHidePrompt(container)
-                                        end
-                                    end
-                                end
-                            end
+                            task.wait(0.1)  -- 每0.1秒检查一次
                         end
-                    end)
+                        -- 如果实体消失，则返回到之前的位置
+                        plr.Character.HumanoidRootPart.CFrame = CFrame.new(lastPosition)
+                    end
+
+                    checkDistance()
                 end
             end
 
-            local running = true
-            while running do
-                local connection = workspace.ChildAdded:Connect(onChildAdded)
-
-                repeat
-                    task.wait(1)
-                until not flags.hintrush or not running
-
-                connection:Disconnect()
-            end
-        else
-            currentEntity = nil -- Clear if the toggle is turned off
-            running = false
+            workspace.CurrentRooms.ChildAdded:Connect(onChildAdded)
         end
     end
 })
