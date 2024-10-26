@@ -1378,49 +1378,39 @@ a:AddToggle('entityEvent', {
     Callback = function(state)
         if state then
             local entityNames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "A90", "Eyes", "JeffTheKiller", "BackdoorRush"} -- Entity names
+            local plr = game.Players.LocalPlayer
+            local RunService = game:GetService("RunService")
 
-            -- Ensure flags and plr are defined
-            local flags = flags or {} -- Prevent errors
-            local plr = game.Players.LocalPlayer -- Prevent errors
+            local function onCollision(hit)
+                if hit and hit.Name == "Collision" then
+                    hit.Cancelled = false
+                    plr.Character.HumanoidRootPart.CFrame = plr.Character.HumanoidRootPart.CFrame + Vector3.new(0, 50, 0)
+                    plr.Character.Humanoid.WalkSpeed = 0 -- 禁止移动
+                end
+            end
 
-            local function fireHidePrompt(container)
-                local hidePrompt = container:FindFirstChild("HidePrompt")
-                if hidePrompt then
-                    while hidePrompt.Enabled do
-                        fireproximityprompt(hidePrompt)
-                        task.wait(0.1) -- Adjust the wait time as needed
+            plr.Character:WaitForChild("Collision").Touched:Connect(onCollision)
+
+            local function checkMonsterStatus()
+                local monsterExists = false
+                for _, entity in pairs(workspace:GetChildren()) do
+                    if entity:IsA("Model") and table.find(entityNames, entity.Name) then
+                        monsterExists = true
+                        break
+                    end
+                end
+
+                if not monsterExists then
+                    plr.Character.HumanoidRootPart.CFrame = CFrame.new(0, 0, 0) -- 传送到原点
+                    plr.Character.Humanoid.WalkSpeed = 16 -- 恢复默认速度
+                    local collisionPart = plr.Character:FindFirstChild("Collision")
+                    if collisionPart then
+                        collisionPart.Cancelled = true
                     end
                 end
             end
 
-            local function avoidEntity()
-                task.wait(3.5)
-                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                    local assets = room:FindFirstChild("Assets")
-                    if assets then
-                        for _, containerName in pairs({"Wardrobe", "Backdoor_Wardrobe", "Rooms_Locker"}) do
-                            local container = assets:FindFirstChild(containerName)
-                            if container then
-                                fireHidePrompt(container)
-                            end
-                        end
-                    end
-                end
-            end
-
-            local function enableHidePrompt(container)
-                local hidePrompt = container:FindFirstChild("HidePrompt")
-                if hidePrompt then
-                    hidePrompt.Enabled = true
-                end
-            end
-
-            local function disableHidePrompt(container)
-                local hidePrompt = container:FindFirstChild("HidePrompt")
-                if hidePrompt then
-                    hidePrompt.Enabled = false
-                end
-            end
+            RunService.Heartbeat:Connect(checkMonsterStatus)
 
             local function onChildAdded(child)
                 if table.find(entityNames, child.Name) then
@@ -1429,57 +1419,20 @@ a:AddToggle('entityEvent', {
                     until plr:DistanceFromCharacter(child:GetPivot().Position) < 1000 or not child:IsDescendantOf(workspace)
                     
                     if child:IsDescendantOf(workspace) then
-                        avoidEntity()
+                        -- 触发避免实体的逻辑
+                        onCollision(child)
                     end
 
-                    -- Monitor for entity disappearance
+                    -- 监控实体消失
                     child.AncestryChanged:Connect(function(_, parent)
                         if not parent then
-                            -- Entity has been removed from the workspace
-                            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                                local assets = room:FindFirstChild("Assets")
-                                if assets then
-                                    for _, containerName in pairs({"Wardrobe", "Backdoor_Wardrobe", "Rooms_Locker"}) do
-                                        local container = assets:FindFirstChild(containerName)
-                                        if container then
-                                            disableHidePrompt(container)
-                                        end
-                                    end
-                                end
-                            end
-                        else
-                            -- Entity has reappeared in the workspace
-                            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                                local assets = room:FindFirstChild("Assets")
-                                if assets then
-                                    for _, containerName in pairs({"Wardrobe", "Backdoor_Wardrobe", "Rooms_Locker"}) do
-                                        local container = assets:FindFirstChild(containerName)
-                                        if container then
-                                            enableHidePrompt(container)
-                                            fireHidePrompt(container)
-                                        end
-                                    end
-                                end
-                            end
+                            checkMonsterStatus()
                         end
                     end)
                 end
             end
 
-            -- Infinite loop to keep the script running and check the hintrush flag
-            local running = true
-            while running do
-                local connection = workspace.ChildAdded:Connect(onChildAdded)
-                
-                repeat
-                    task.wait(1) -- Adjust wait time as needed
-                until not flags.hintrush or not running
-                
-                connection:Disconnect()
-            end 
-        else 
-            -- Turn off notifications or perform other cleanup if needed
-            running = false
+            workspace.CurrentRooms.ChildAdded:Connect(onChildAdded)
         end
     end
 })
