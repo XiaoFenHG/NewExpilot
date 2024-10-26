@@ -1372,51 +1372,89 @@ a:AddToggle('No Clip', {
     end
 })
 a:AddToggle('entityEvent', {
-    Text = 'Entity Avoid [test]',
+    Text = 'Entity Avoid [Advanced]',
     Default = false,
-    Tooltip = 'Walk through walls',
+    Tooltip = 'Walk through walls while avoiding entities',
     Callback = function(state)
         if state then
             local entityNames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "A90", "Eyes", "JeffTheKiller", "BackdoorRush"}
             local plr = game.Players.LocalPlayer
-            local RunService = game:GetService("RunService")
-            local collisionPart = plr.Character:WaitForChild("Collision")
-            local lastPosition = plr.Character.HumanoidRootPart.Position
+            local running = true
 
-            local function onCollision()
-                plr.Character.HumanoidRootPart.CFrame = lastPosition + Vector3.new(0, 50, 0)
-            end
-
-            local function checkCollisionMovement()
-                if collisionPart.Position ~= lastPosition then
-                    lastPosition = collisionPart.Position
-                    onCollision()
-                end
-            end
-
-            RunService.Heartbeat:Connect(checkCollisionMovement)
-
-            local function onChildAdded(child)
-                if table.find(entityNames, child.Name) then
-                    -- 检测实体的位置
-                    local function checkDistance()
-                        while child:IsDescendantOf(workspace) do
-                            local distance = plr:DistanceFromCharacter(child:GetPivot().Position)
-                            if distance < 50 then  -- 可以调整这个距离
-                                lastPosition = plr.Character.HumanoidRootPart.Position  -- 记录当前位置
-                                plr.Character.HumanoidRootPart.CFrame = child:GetPivot() + Vector3.new(0, 50, 0)  -- 传送到新位置
-                            end
-                            task.wait(0.1)  -- 每0.1秒检查一次
-                        end
-                        -- 如果实体消失，则返回到之前的位置
-                        plr.Character.HumanoidRootPart.CFrame = CFrame.new(lastPosition)
+            local function fireHidePrompt(container)
+                local hidePrompt = container:FindFirstChild("HidePrompt")
+                if hidePrompt then
+                    while hidePrompt.Enabled do
+                        fireproximityprompt(hidePrompt)
+                        task.wait(0.1)
                     end
-
-                    checkDistance()
                 end
             end
 
-            workspace.CurrentRooms.ChildAdded:Connect(onChildAdded)
+            local function toggleHidePrompt(container, state)
+                local hidePrompt = container:FindFirstChild("HidePrompt")
+                if hidePrompt then
+                    hidePrompt.Enabled = state
+                end
+            end
+
+            local function processContainers(room, state)
+                local assets = room:FindFirstChild("Assets")
+                if assets then
+                    for _, containerName in pairs({"Wardrobe", "Backdoor_Wardrobe", "Rooms_Locker"}) do
+                        local container = assets:FindFirstChild(containerName)
+                        if container then
+                            toggleHidePrompt(container, state)
+                            if state then
+                                fireHidePrompt(container)
+                            end
+                        end
+                    end
+                end
+            end
+
+            local function avoidEntity(entity)
+                task.wait(3.5)
+                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                    processContainers(room, true)
+                end
+            end
+
+            local function onEntityAdded(entity)
+                if table.find(entityNames, entity.Name) then
+                    local isMoving = true
+
+                    repeat
+                        task.wait(0.1)
+                        isMoving = entity:IsDescendantOf(workspace) and plr:DistanceFromCharacter(entity:GetPivot().Position) < 1000
+                        if isMoving then
+                            avoidEntity(entity)
+                        end
+                    until not isMoving or not entity:IsDescendantOf(workspace)
+
+                    entity.AncestryChanged:Connect(function(_, parent)
+                        if not parent then
+                            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                                processContainers(room, false)
+                            end
+                        else
+                            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                                processContainers(room, true)
+                            end
+                        end
+                    end)
+                end
+            end
+
+            local connection = workspace.ChildAdded:Connect(onEntityAdded)
+
+            while running do
+                task.wait(1)
+            end
+
+            connection:Disconnect()
+        else
+            running = false
         end
     end
 })
