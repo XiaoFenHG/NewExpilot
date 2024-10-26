@@ -227,7 +227,7 @@ local Window = Library:CreateWindow({
 	-- Position and Size are also valid options here
 	-- but you do not need to define them unless you are changing them :)
 
-	Title = 'Expliot Hax Alpha 3',
+	Title = 'Expliot Hax Alpha 4',
 	Center = true,
 	AutoShow = true,
 	Resizable = true,
@@ -1163,7 +1163,7 @@ Tab1:AddSlider('MySlider', {
     Text = 'Speed',
     Default = 0,
     Min = 0,
-    Max = 15,
+    Max = 45,
     Rounding = 1
 })
 
