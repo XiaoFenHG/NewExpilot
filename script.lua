@@ -1372,90 +1372,86 @@ a:AddToggle('No Clip', {
     end
 })
 a:AddToggle('entityEvent', {
-    Text = 'Entity Avoid [Advanced]',
+    Text = 'Entity Avoid [Advanced And Test]',
     Default = false,
     Tooltip = 'Walk through walls while avoiding entities',
     Callback = function(state)
-        if state then
-            local entityNames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "A90", "Eyes", "JeffTheKiller", "BackdoorRush"}
-            local plr = game.Players.LocalPlayer
-            local running = true
+        local entityNames = {"RushMoving", "AmbushMoving", "Snare", "A60", "A120", "A90", "Eyes", "JeffTheKiller", "BackdoorRush"}
+        local plr = game.Players.LocalPlayer
+        local running = state
 
-            local function fireHidePrompt(container)
-                local hidePrompt = container:FindFirstChild("HidePrompt")
-                if hidePrompt then
-                    while hidePrompt.Enabled do
-                        fireproximityprompt(hidePrompt)
-                        task.wait(0.1)
-                    end
+        local function fireHidePrompt(container)
+            local hidePrompt = container:FindFirstChild("HidePrompt")
+            if hidePrompt and hidePrompt:GetAttribute("Interactions") then
+                while hidePrompt.Enabled do
+                    fireproximityprompt(hidePrompt)
+                    task.wait(0.1) -- Adjust this wait time for your needs
                 end
             end
-
-            local function toggleHidePrompt(container, state)
-                local hidePrompt = container:FindFirstChild("HidePrompt")
-                if hidePrompt then
-                    hidePrompt.Enabled = state
-                end
-            end
-
-            local function processContainers(room, state)
-                local assets = room:FindFirstChild("Assets")
-                if assets then
-                    for _, containerName in pairs({"Wardrobe", "Backdoor_Wardrobe", "Rooms_Locker"}) do
-                        local container = assets:FindFirstChild(containerName)
-                        if container then
-                            toggleHidePrompt(container, state)
-                            if state then
-                                fireHidePrompt(container)
-                            end
-                        end
-                    end
-                end
-            end
-
-            local function avoidEntity(entity)
-                task.wait(3.5)
-                for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                    processContainers(room, true)
-                end
-            end
-
-            local function onEntityAdded(entity)
-                if table.find(entityNames, entity.Name) then
-                    local isMoving = true
-
-                    repeat
-                        task.wait(0.1)
-                        isMoving = entity:IsDescendantOf(workspace) and plr:DistanceFromCharacter(entity:GetPivot().Position) < 1000
-                        if isMoving then
-                            avoidEntity(entity)
-                        end
-                    until not isMoving or not entity:IsDescendantOf(workspace)
-
-                    entity.AncestryChanged:Connect(function(_, parent)
-                        if not parent then
-                            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                                processContainers(room, false)
-                            end
-                        else
-                            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                                processContainers(room, true)
-                            end
-                        end
-                    end)
-                end
-            end
-
-            local connection = workspace.ChildAdded:Connect(onEntityAdded)
-
-            while running do
-                task.wait(1)
-            end
-
-            connection:Disconnect()
-        else
-            running = false
         end
+
+        local function toggleHidePrompt(container, state)
+            local hidePrompt = container:FindFirstChild("HidePrompt")
+            if hidePrompt then
+                hidePrompt.Enabled = state
+            end
+        end
+
+        local function processContainers(room, state)
+            local assets = room:FindFirstChild("Assets")
+            if assets then
+                for _, containerName in pairs({"Wardrobe", "Backdoor_Wardrobe", "Rooms_Locker"}) do
+                    local container = assets:FindFirstChild(containerName)
+                    if container then
+                        toggleHidePrompt(container, state)
+                        if state then
+                            fireHidePrompt(container)
+                        end
+                    end
+                end
+            end
+        end
+
+        local function avoidEntity(entity)
+            task.wait(3.5)
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                processContainers(room, true)
+            end
+        end
+
+        local function onEntityAdded(entity)
+            if table.find(entityNames, entity.Name) then
+                local isMoving = true
+
+                repeat
+                    task.wait(0.1)
+                    isMoving = entity:IsDescendantOf(workspace) and plr:DistanceFromCharacter(entity:GetPivot().Position) < 1000
+                    if isMoving then
+                        avoidEntity(entity)
+                    end
+                until not isMoving or not entity:IsDescendantOf(workspace)
+
+                entity.AncestryChanged:Connect(function(_, parent)
+                    if not parent then
+                        for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                            processContainers(room, false)
+                        end
+                    else
+                        for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                            processContainers(room, true)
+                        end
+                    end
+                end)
+            end
+        end
+
+        local connection = workspace.ChildAdded:Connect(onEntityAdded)
+
+        while running do
+            task.wait(1)
+        end
+
+        connection:Disconnect()
     end
 })
 a:AddToggle('No Clip', {
