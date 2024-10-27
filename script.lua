@@ -1257,8 +1257,9 @@ Toggles.SpeedBypass:OnChanged(function(value)
     end
 end)
 -- Create the toggle and slider
-Tab2:AddToggle('TranslucentHidingSpot', { Text = 'Hide transparency [Toggle]' })
-Tab2:AddSlider('HidingTransparency', {
+-- Create the toggle and slider
+Tab1:AddToggle('TranslucentHidingSpot', { Text = 'Hide transparency [Toggle]' })
+Tab1:AddSlider('HidingTransparency', {
     Text = 'Hide transparency',
     Default = 1,
     Min = 0,
@@ -1268,8 +1269,8 @@ Tab2:AddSlider('HidingTransparency', {
 
 -- Function to handle transparency changes
 Toggles.TranslucentHidingSpot:OnChanged(function(value)
-    local Character = shared.Character -- Add this line to reference the player's character
-    if value and Character:GetAttribute("Hiding") then
+    local Character = game.Players.LocalPlayer.Character -- Reference the player's character
+    if Character and value and Character:GetAttribute("Hiding") then
         for _, obj in pairs(workspace.CurrentRooms:GetDescendants()) do
             if not obj:IsA("ObjectValue") and obj.Name ~= "HiddenPlayer" then continue end
 
