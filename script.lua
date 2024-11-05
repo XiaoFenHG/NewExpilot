@@ -1,35 +1,39 @@
 local RunService = game:GetService("RunService")
 local Camera = game.Workspace.CurrentCamera
+local Players = game:GetService("Players")
 
+-- Function to create a smoother and more advanced highlight with effects
 local function createHighlight(part, color)
     local highlight = Instance.new("Highlight")
     highlight.Adornee = part
     highlight.FillColor = color
     highlight.OutlineColor = color
-    highlight.OutlineTransparency = 0.5
+    highlight.OutlineTransparency = 0.7
     highlight.FillTransparency = 0.5
     highlight.Parent = part
     return highlight
 end
 
+-- Enhanced Billboard GUI with shadow and opacity improvements
 local function createBillboardGui(core, color, name)
     local bill = Instance.new("BillboardGui", game.CoreGui)
     bill.AlwaysOnTop = true
-    bill.Size = UDim2.new(0, 100, 0, 50)
+    bill.Size = UDim2.new(0, 200, 0, 50)
     bill.Adornee = core
     bill.MaxDistance = 2000
+    bill.StudsOffset = Vector3.new(0, 3, 0)  -- Adjust offset to prevent overlap
 
     local txt = Instance.new("TextLabel", bill)
     txt.AnchorPoint = Vector2.new(0.5, 0.5)
     txt.BackgroundTransparency = 1
     txt.TextColor3 = color
-    txt.Size = UDim2.new(1, 0, 0, 20)
-    txt.Position = UDim2.new(0.5, 0, 0.5, 0)
+    txt.Size = UDim2.new(1, 0, 0, 25)
+    txt.Position = UDim2.new(0.5, 0, 0.3, 0)
     txt.Text = name
-    txt.TextStrokeTransparency = 0.5
-    txt.TextSize = 25
+    txt.TextStrokeTransparency = 0.3
+    txt.TextSize = 26
     txt.Font = Enum.Font.Code
-    Instance.new("UIStroke", txt)
+    Instance.new("UIStroke", txt).Color = color
 
     local distanceLabel = Instance.new("TextLabel", bill)
     distanceLabel.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -37,49 +41,40 @@ local function createBillboardGui(core, color, name)
     distanceLabel.TextColor3 = color
     distanceLabel.Size = UDim2.new(1, 0, 0, 20)
     distanceLabel.Position = UDim2.new(0.5, 0, 0.9, 0)
-    distanceLabel.TextStrokeTransparency = 0.5
+    distanceLabel.TextStrokeTransparency = 0.3
     distanceLabel.TextSize = 20
     distanceLabel.Font = Enum.Font.Code
-    Instance.new("UIStroke", distanceLabel)
+    Instance.new("UIStroke", distanceLabel).Color = color
 
+    -- Update distance dynamically (without the word "Distance")
     local function updateDistance()
         if core and core:IsDescendantOf(workspace) then
-            local playerPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
-            local targetPos
-
-            if core:IsA("Model") then
-                local primaryPart = core.PrimaryPart or core:FindFirstChildWhichIsA("BasePart")
-                if primaryPart then
-                    targetPos = primaryPart.Position
-                end
-            elseif core:IsA("BasePart") then
-                targetPos = core.Position
-            end
+            local playerPos = Players.LocalPlayer.Character.HumanoidRootPart.Position
+            local targetPos = core:IsA("BasePart") and core.Position or core.PrimaryPart and core.PrimaryPart.Position
 
             if targetPos then
-                local distance = math.floor((playerPos - targetPos).Magnitude)
-                distanceLabel.Text = string.format("[%d]", distance)
+                local distance = math.floor((playerPos - targetPos).Magnitude)  -- Ensuring distance is an integer
+                distanceLabel.Text = string.format("%d", distance)  -- Display just the distance value, no "Distance"
             end
         end
     end
 
     RunService.RenderStepped:Connect(updateDistance)
-
     return bill
 end
 
+-- Advanced Tracer that follows the target and supports better visuals
 local function createTracer(target, color)
     local line = Drawing.new("Line")
     line.Color = color
     line.Thickness = 2
-    line.Transparency = 1
+    line.Transparency = 0.8
+    line.Visible = false
 
     local function updateTracer()
         if target and target:IsDescendantOf(workspace) then
             local targetPos = Camera:WorldToViewportPoint(target.Position)
-            local screenPos = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-
-            line.From = screenPos
+            line.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
             line.To = Vector2.new(targetPos.X, targetPos.Y)
             line.Visible = true
         else
@@ -88,27 +83,47 @@ local function createTracer(target, color)
     end
 
     RunService.RenderStepped:Connect(updateTracer)
-
     return line
 end
 
-function esp(what, color, core, name, enableTracer)
-    enableTracer = enableTracer or false
+-- Function to check if the part has a specific attribute (or any attribute if no name is given)
+local function hasValidAttribute(part, attributeName)
+    -- If attributeName is provided, check if the attribute exists and is not nil
+    if attributeName then
+        return part:GetAttribute(attributeName) ~= nil
+    else
+        -- If no attributeName is provided, return true if the part has any attribute
+        for _, attribute in pairs(part:GetAttributes()) do
+            if attribute ~= nil then
+                return true
+            end
+        end
+        return false
+    end
+end
 
+-- The main ESP function with enhanced features and attribute check
+function esp(what, color, core, name, enableTracer, attributeName)
+    enableTracer = enableTracer or false
+    attributeName = attributeName or nil  -- Default to nil, meaning "check for any attribute"
+
+    -- Create part list based on input (Instance or Table of parts)
     local parts = {}
     if typeof(what) == "Instance" then
         if what:IsA("Model") then
             for _, v in ipairs(what:GetChildren()) do
-                if v:IsA("BasePart") then
+                -- Only process parts that have the valid attribute (if attributeName is specified)
+                if v:IsA("BasePart") and hasValidAttribute(v, attributeName) then
                     table.insert(parts, v)
                 end
             end
-        elseif what:IsA("BasePart") then
+        elseif what:IsA("BasePart") and hasValidAttribute(what, attributeName) then
             table.insert(parts, what)
         end
     elseif typeof(what) == "table" then
         for _, v in ipairs(what) do
-            if v:IsA("BasePart") then
+            -- Only process parts that have the valid attribute (if attributeName is specified)
+            if v:IsA("BasePart") and hasValidAttribute(v, attributeName) then
                 table.insert(parts, v)
             end
         end
@@ -117,6 +132,7 @@ function esp(what, color, core, name, enableTracer)
     local highlights = {}
     local tracers = {}
 
+    -- Apply highlighting and optionally add tracers
     for _, part in ipairs(parts) do
         local highlight = createHighlight(part, color)
         table.insert(highlights, highlight)
@@ -127,11 +143,13 @@ function esp(what, color, core, name, enableTracer)
         end
     end
 
+    -- Create Billboard GUI for name and distance display
     local bill
     if core and name then
         bill = createBillboardGui(core, color, name)
     end
 
+    -- Function to clean up highlights, billboards, and tracers when they are no longer needed
     local function checkAndUpdate()
         for _, highlight in ipairs(highlights) do
             if not highlight.Adornee or not highlight:IsDescendantOf(workspace) then
@@ -144,7 +162,7 @@ function esp(what, color, core, name, enableTracer)
         end
 
         for _, tracer in ipairs(tracers) do
-            if not tracer or not tracer.Visible then
+            if not tracer.Visible then
                 tracer:Remove()
             end
         end
@@ -152,6 +170,7 @@ function esp(what, color, core, name, enableTracer)
 
     RunService.Stepped:Connect(checkAndUpdate)
 
+    -- Return a delete function to remove all objects created by the ESP
     local ret = {}
     ret.delete = function()
         for _, highlight in ipairs(highlights) do
