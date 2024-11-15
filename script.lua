@@ -553,7 +553,152 @@ LeftGroupBox:AddInput('ReboundingDelay', {
     end
 })
 
+LeftGroupBox:AddInput('DamageEnabled', {
+    Default = 'true',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Damage Enabled',
+    Tooltip = 'Enable or disable damage (true/false)',
+    Placeholder = 'Damage Enabled',
+    Callback = function(Value)
+        entity.Damage.Enabled = (Value == 'true')
+        print('[cb] Damage Enabled updated. New value:', Value)
+    end
+})
 
+LeftGroupBox:AddInput('DamageRange', {
+    Default = '40',
+    Numeric = true,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Damage Range',
+    Tooltip = 'Enter the range of the damage',
+    Placeholder = 'Damage Range',
+    Callback = function(Value)
+        entity.Damage.Range = tonumber(Value)
+        print('[cb] Damage Range updated. New range:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('DamageAmount', {
+    Default = '125',
+    Numeric = true,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Damage Amount',
+    Tooltip = 'Enter the amount of damage',
+    Placeholder = 'Damage Amount',
+    Callback = function(Value)
+        entity.Damage.Amount = tonumber(Value)
+        print('[cb] Damage Amount updated. New amount:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('CrucifixionEnabled', {
+    Default = 'true',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Crucifixion Enabled',
+    Tooltip = 'Enable or disable crucifixion (true/false)',
+    Placeholder = 'Crucifixion Enabled',
+    Callback = function(Value)
+        entity.Crucifixion.Enabled = (Value == 'true')
+        print('[cb] Crucifixion Enabled updated. New value:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('CrucifixionRange', {
+    Default = '40',
+    Numeric = true,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Crucifixion Range',
+    Tooltip = 'Enter the range of crucifixion',
+    Placeholder = 'Crucifixion Range',
+    Callback = function(Value)
+        entity.Crucifixion.Range = tonumber(Value)
+        print('[cb] Crucifixion Range updated. New range:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('CrucifixionResist', {
+    Default = 'false',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Crucifixion Resist',
+    Tooltip = 'Enable or disable crucifixion resist (true/false)',
+    Placeholder = 'Crucifixion Resist',
+    Callback = function(Value)
+        entity.Crucifixion.Resist = (Value == 'false')
+        print('[cb] Crucifixion Resist updated. New value:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('CrucifixionBreak', {
+    Default = 'true',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Crucifixion Break',
+    Tooltip = 'Enable or disable crucifixion break (true/false)',
+    Placeholder = 'Crucifixion Break',
+    Callback = function(Value)
+        entity.Crucifixion.Break = (Value == 'true')
+        print('[cb] Crucifixion Break updated. New value:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('DeathType', {
+    Default = 'Guiding',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Death Type',
+    Tooltip = 'Enter the type of death (Guiding/Curious)',
+    Placeholder = 'Death Type',
+    Callback = function(Value)
+        entity.Death.Type = Value
+        print('[cb] Death Type updated. New type:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('DeathHints', {
+    Default = 'Death, Hints, Go, Here',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Death Hints',
+    Tooltip = 'Enter the hints for death (comma separated)',
+    Placeholder = 'Death Hints',
+    Callback = function(Value)
+        local hints = {}
+        for hint in string.gmatch(Value, '([^,]+)') do
+            table.insert(hints, hint)
+        end
+        entity.Death.Hints = hints
+        print('[cb] Death Hints updated. New hints:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('DeathCause', {
+    Default = '',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Death Cause',
+    Tooltip = 'Enter the cause of death',
+    Placeholder = 'Death Cause',
+    Callback = function(Value)
+        entity.Death.Cause = Value
+        print('[cb] Death Cause updated. New cause:', Value)
+    end
+})
+
+
+  
 Group:AddToggle('entityEvent', {
     Text = 'Entity Event',
     Default = false,
