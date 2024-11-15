@@ -282,6 +282,277 @@ local Tabs = {
 local RightGroup = Tabs.Main3:AddLeftGroupbox('ESP')
 local Group = Tabs.Main:AddLeftGroupbox('Chat Nofiction')
 local textChannel = game:GetService("TextChatService"):WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+-- Add Input Boxes and Buttons for custom entity parameters
+LeftGroupBox:AddInput('EntityName', {
+    Default = 'Template Entity',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Entity Name',
+    Tooltip = 'Enter the name of the entity',
+    Placeholder = 'Entity Name',
+    Callback = function(Value)
+        entity.Entity.Name = Value
+        print('[cb] Entity Name updated. New name:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('EntityAsset', {
+    Default = 'https://github.com/RegularVynixu/Utilities/raw/main/Doors/Entity%20Spawner/Assets/Entities/Rush.rbxm',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Entity Asset URL',
+    Tooltip = 'Enter the URL of the entity asset',
+    Placeholder = 'Entity Asset URL',
+    Callback = function(Value)
+        entity.Entity.Asset = Value
+        print('[cb] Entity Asset updated. New asset URL:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('EntityHeightOffset', {
+    Default = '0',
+    Numeric = true,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Entity Height Offset',
+    Tooltip = 'Enter the height offset of the entity',
+    Placeholder = 'Entity Height Offset',
+    Callback = function(Value)
+        entity.Entity.HeightOffset = tonumber(Value)
+        print('[cb] Entity Height Offset updated. New offset:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('FlickerEnabled', {
+    Default = 'true',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Flicker Enabled',
+    Tooltip = 'Enable or disable flicker (true/false)',
+    Placeholder = 'Flicker Enabled',
+    Callback = function(Value)
+        entity.Lights.Flicker.Enabled = (Value == 'true')
+        print('[cb] Flicker Enabled updated. New value:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('FlickerDuration', {
+    Default = '1',
+    Numeric = true,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Flicker Duration',
+    Tooltip = 'Enter the duration of the flicker',
+    Placeholder = 'Flicker Duration',
+    Callback = function(Value)
+        entity.Lights.Flicker.Duration = tonumber(Value)
+        print('[cb] Flicker Duration updated. New duration:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('ShatterEnabled', {
+    Default = 'true',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Shatter Enabled',
+    Tooltip = 'Enable or disable shatter (true/false)',
+    Placeholder = 'Shatter Enabled',
+    Callback = function(Value)
+        entity.Lights.Shatter = (Value == 'true')
+        print('[cb] Shatter Enabled updated. New value:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('RepairEnabled', {
+    Default = 'false',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Repair Enabled',
+    Tooltip = 'Enable or disable repair (true/false)',
+    Placeholder = 'Repair Enabled',
+    Callback = function(Value)
+        entity.Lights.Repair = (Value == 'false')
+        print('[cb] Repair Enabled updated. New value:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('EarthquakeEnabled', {
+    Default = 'true',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Earthquake Enabled',
+    Tooltip = 'Enable or disable earthquake (true/false)',
+    Placeholder = 'Earthquake Enabled',
+    Callback = function(Value)
+        entity.Earthquake.Enabled = (Value == 'true')
+        print('[cb] Earthquake Enabled updated. New value:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('CameraShakeEnabled', {
+    Default = 'true',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Camera Shake Enabled',
+    Tooltip = 'Enable or disable camera shake (true/false)',
+    Placeholder = 'Camera Shake Enabled',
+    Callback = function(Value)
+        entity.CameraShake.Enabled = (Value == 'true')
+        print('[cb] Camera Shake Enabled updated. New value:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('CameraShakeRange', {
+    Default = '100',
+    Numeric = true,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Camera Shake Range',
+    Tooltip = 'Enter the range of the camera shake',
+    Placeholder = 'Camera Shake Range',
+    Callback = function(Value)
+        entity.CameraShake.Range = tonumber(Value)
+        print('[cb] Camera Shake Range updated. New range:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('CameraShakeValues', {
+    Default = '1.5, 20, 0.1, 1',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Camera Shake Values',
+    Tooltip = 'Enter the values for camera shake (Magnitude, Roughness, FadeIn, FadeOut)',
+    Placeholder = 'Camera Shake Values',
+    Callback = function(Value)
+        local values = {}
+        for v in string.gmatch(Value, '([^,]+)') do
+            table.insert(values, tonumber(v))
+        end
+        entity.CameraShake.Values = values
+        print('[cb] Camera Shake Values updated. New values:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('MovementSpeed', {
+    Default = '100',
+    Numeric = true,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Movement Speed',
+    Tooltip = 'Enter the speed of the entity',
+    Placeholder = 'Movement Speed',
+    Callback = function(Value)
+        entity.Movement.Speed = tonumber(Value)
+        print('[cb] Movement Speed updated. New speed:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('MovementDelay', {
+    Default = '2',
+    Numeric = true,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Movement Delay',
+    Tooltip = 'Enter the delay of the entity movement',
+    Placeholder = 'Movement Delay',
+    Callback = function(Value)
+        entity.Movement.Delay = tonumber(Value)
+        print('[cb] Movement Delay updated. New delay:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('MovementReversed', {
+    Default = 'false',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Movement Reversed',
+    Tooltip = 'Enable or disable reversed movement (true/false)',
+    Placeholder = 'Movement Reversed',
+    Callback = function(Value)
+        entity.Movement.Reversed = (Value == 'false')
+        print('[cb] Movement Reversed updated. New value:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('ReboundingEnabled', {
+    Default = 'true',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Rebounding Enabled',
+    Tooltip = 'Enable or disable rebounding (true/false)',
+    Placeholder = 'Rebounding Enabled',
+    Callback = function(Value)
+        entity.Rebounding.Enabled = (Value == 'true')
+        print('[cb] Rebounding Enabled updated. New value:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('ReboundingType', {
+    Default = 'Ambush',
+    Numeric = false,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Rebounding Type',
+    Tooltip = 'Enter the rebounding type (Ambush/Blitz)',
+    Placeholder = 'Rebounding Type',
+    Callback = function(Value)
+        entity.Rebounding.Type = Value
+        print('[cb] Rebounding Type updated. New type:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('ReboundingMin', {
+    Default = '1',
+    Numeric = true,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Rebounding Min',
+    Tooltip = 'Enter the minimum rebounding value',
+    Placeholder = 'Rebounding Min',
+    Callback = function(Value)
+        entity.Rebounding.Min = tonumber(Value)
+        print('[cb] Rebounding Min updated. New min:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('ReboundingMax', {
+    Default = '1',
+    Numeric = true,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Rebounding Max',
+    Tooltip = 'Enter the maximum rebounding value',
+    Placeholder = 'Rebounding Max',
+    Callback = function(Value)
+        entity.Rebounding.Max = tonumber(Value)
+        print('[cb] Rebounding Max updated. New max:', Value)
+    end
+})
+
+LeftGroupBox:AddInput('ReboundingDelay', {
+    Default = '2',
+    Numeric = true,
+    Finished = true,
+    ClearTextOnFocus = true,
+    Text = 'Rebounding Delay',
+    Tooltip = 'Enter the delay of the rebounding',
+    Placeholder = 'Rebounding Delay',
+    Callback = function(Value)
+        entity.Rebounding.Delay = tonumber(Value)
+        print('[cb] Rebounding Delay updated. New delay:', Value)
+    end
+})
+
 
 Group:AddToggle('entityEvent', {
     Text = 'Entity Event',
