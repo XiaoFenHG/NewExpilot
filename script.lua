@@ -1878,6 +1878,54 @@ Toggles.TranslucentHidingSpot:OnChanged(function(value)
         end
     end
 end)
+
+Tab1:AddToggle('CJ', { Text = 'Player Can Jump [tset]' })
+-- Initialize the CanJump attribute
+LocalPlayer.Character:SetAttribute("CanJump", LocalPlayer.Character:GetAttribute("CanJump") or false)
+local CanJump = LocalPlayer.Character:GetAttribute("CanJump")
+
+-- Connect to the attribute changed signal
+LocalPlayer.Character:GetAttributeChangedSignal("CanJump"):Connect(function()
+    LocalPlayer.Character:SetAttribute("CanJump", Toggles.ES_AlwaysJump.Value or CanJump)
+
+    if not Toggles.CJ.Value then
+        CanJump = LocalPlayer.Character:GetAttribute("CanJump")
+    end
+end)
+Tab2:AddToggle('Cl', { Text = 'Player Third View' })
+task.spawn(function()
+    while task.wait() and not Library.Unloaded do
+        if LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and Toggles.Cl.Value then
+            ThirdpersonParts = Instance.new("Folder", LocalPlayer.Character)
+
+            for _, v in pairs(LocalPlayer.Character:GetChildren()) do
+                if v:IsA("Accessory") then
+                    local clone = v:FindFirstChildWhichIsA("MeshPart"):Clone()
+                    clone.Parent = ThirdpersonParts
+                end
+            end
+
+            local headClone = LocalPlayer.Character.Head:Clone()
+            headClone.Parent = ThirdpersonParts
+            headClone.Material = "SmoothPlastic"
+
+            local mainGame = require(LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game)
+            local renderSteppedConn = game:GetService("RunService").RenderStepped:Connect(function()
+                if mainGame then
+                    local baseCamCf = mainGame.basecamcf
+                    local camShakeCf = CFrame.new() or mainGame.csgo
+                    local thirdPersonOffset = CFrame.new(5, 4, 5)
+
+                    workspace.CurrentCamera.CFrame = baseCamCf * thirdPersonOffset * camShakeCf
+                end
+            end)
+
+            repeat task.wait() until Toggles.Cl.Value
+            renderSteppedConn:Disconnect()
+            ThirdpersonParts:ClearAllChildren()
+        end
+    end
+end)
 local a = Tabs.Main:AddRightGroupbox('Normal Exploit')
 a:AddToggle('pe', {
     Text = 'Full bright',
