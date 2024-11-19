@@ -1886,7 +1886,7 @@ local CanJump = LocalPlayer.Character:GetAttribute("CanJump")
 
 -- Connect to the attribute changed signal
 LocalPlayer.Character:GetAttributeChangedSignal("CanJump"):Connect(function()
-    LocalPlayer.Character:SetAttribute("CanJump", Toggles.ES_AlwaysJump.Value or CanJump)
+    LocalPlayer.Character:SetAttribute("CanJump", Toggles.CJ.Value or CanJump)
 
     if not Toggles.CJ.Value then
         CanJump = LocalPlayer.Character:GetAttribute("CanJump")
