@@ -1334,17 +1334,27 @@ Toggles.TranslucentHidingSpot:OnChanged(function(value)
     end
 end)
 
+-- Ensure the character is loaded
+local player = game.Players.LocalPlayer
+
+if not player.Character then
+    player.CharacterAdded:Wait()
+end
+
+local character = player.Character or player.CharacterAdded:Wait()
+
 Tab1:AddToggle('CJ', { Text = 'Player Can Jump [tset]' })
+
 -- Initialize the CanJump attribute
-LocalPlayer.Character:SetAttribute("CanJump", LocalPlayer.Character:GetAttribute("CanJump") or false)
-local CanJump = LocalPlayer.Character:GetAttribute("CanJump")
+character:SetAttribute("CanJump", character:GetAttribute("CanJump") or false)
+local CanJump = character:GetAttribute("CanJump")
 
 -- Connect to the attribute changed signal
-LocalPlayer.Character:GetAttributeChangedSignal("CanJump"):Connect(function()
-    LocalPlayer.Character:SetAttribute("CanJump", Toggles.CJ.Value or CanJump)
+character:GetAttributeChangedSignal("CanJump"):Connect(function()
+    character:SetAttribute("CanJump", Toggles.CJ.Value or CanJump)
 
     if not Toggles.CJ.Value then
-        CanJump = LocalPlayer.Character:GetAttribute("CanJump")
+        CanJump = character:GetAttribute("CanJump")
     end
 end)
 local a = Tabs.Main:AddRightGroupbox('Normal Exploit')
