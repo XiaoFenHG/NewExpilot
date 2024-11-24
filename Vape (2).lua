@@ -140,40 +140,61 @@ function lib:Window(text, preset, closebind)
 
     MakeDraggable(DragFrame, Main)
 
-    local uitoggled = false
-    UserInputService.InputBegan:Connect(
-        function(io, p)
-            if io.KeyCode == CloseBind then
-                if uitoggled == false then
-                    uitoggled = true
-                
-                    Main:TweenSize(
-                        UDim2.new(0, 0, 0, 0), 
-                        Enum.EasingDirection.Out, 
-                        Enum.EasingStyle.Quart, 
-                        .6, 
-                        true, 
-                        function()
-                            ui.Enabled = false
-                        end
-                    )
-                    
-                else
-                    uitoggled = false
-                    ui.Enabled = true
-                
-                    Main:TweenSize(
-                        UDim2.new(0, 560, 0, 319),
-                        Enum.EasingDirection.Out,
-                        Enum.EasingStyle.Quart,
-                        .6,
-                        true
-                    )
-                end
-            end
-        end
-    )
+    local UserInputService = game:GetService("UserInputService")
+local ui = Instance.new("ScreenGui")
+local Main = Instance.new("Frame")
+local ToggleButton = Instance.new("TextButton")
+local uitoggled = false
 
+-- 设置 UI 属性
+ui.Name = "ToggleUI"
+ui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- 设置主框架属性
+Main.Name = "Main"
+Main.Parent = ui
+Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Main.Position = UDim2.new(0, 0, 0.5, -159.5)  -- 左中位置
+Main.Size = UDim2.new(0, 560, 0, 319)
+Main.AnchorPoint = Vector2.new(0, 0.5)
+
+-- 设置按钮属性
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Parent = ui
+ToggleButton.Text = "Toggle UI"
+ToggleButton.Position = UDim2.new(0, 20, 0, 20)
+ToggleButton.Size = UDim2.new(0, 100, 0, 50)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Font = Enum.Font.SourceSans
+ToggleButton.TextSize = 20
+
+-- 定义按钮点击事件
+ToggleButton.MouseButton1Click:Connect(function()
+    if uitoggled == false then
+        uitoggled = true
+        Main:TweenSize(
+            UDim2.new(0, 0, 0, 0), 
+            Enum.EasingDirection.Out, 
+            Enum.EasingStyle.Quart, 
+            0.6, 
+            true, 
+            function()
+                ui.Enabled = false
+            end
+        )
+    else
+        uitoggled = false
+        ui.Enabled = true
+        Main:TweenSize(
+            UDim2.new(0, 560, 0, 319),
+            Enum.EasingDirection.Out,
+            Enum.EasingStyle.Quart,
+            0.6,
+            true
+        )
+    end
+end)
     TabFolder.Name = "TabFolder"
     TabFolder.Parent = Main
 
