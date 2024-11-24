@@ -1,6 +1,6 @@
 local CoreGui = game:GetService("StarterGui")
 CoreGui:SetCore("SendNotification", {
-    Title = "Creepy Client Welcome",
+    Title = "Creepy Client Welcome<回归>",
     Text = "V1.2",
     Duration = 3, 
 })
@@ -482,49 +482,92 @@ tab8:Button("犯罪分子team", function()
         player.Character.HumanoidRootPart.CFrame = CFrame.new(Vector3.new(100, 10, 100)) -- 传送到犯罪分子基地
         end
 end)
+local Enable = false
 
-tab8:Button("扔小石子(可能无效😡)", function()
-    local function throwShuriken()
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local shuriken = Instance.new("Part")
-    shuriken.Size = Vector3.new(1, 1, 1)
-    shuriken.Shape = Enum.PartType.Block
-    shuriken.Position = character.Head.Position
-    shuriken.Parent = workspace
+tab8:Toggle("杀戮光环", false, function(state)
+    if state then
+        Enable = true
+        
+        -- 自动攻击功能
+        spawn(function()
+            while Enable do
+                wait(0.1)
+                for i, v in pairs(game:GetService("Players"):GetChildren()) do
+                    pcall(function()
+                        if v ~= game:GetService("Players").LocalPlayer and not v.Character:FindFirstChildOfClass("ForceField") and v.Character.Humanoid.Health > 0 then
+                            while v.Character:WaitForChild("Humanoid").Health > 0 and Enable do
+                                wait()
+                                game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame
+                                for x, c in pairs(game:GetService("Players"):GetChildren()) do
+                                    if c ~= game:GetService("Players").LocalPlayer then 
+                                        game.ReplicatedStorage.meleeEvent:FireServer(c)
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                    wait()
+                end
+            end
+        end)
+    else
+        Enable = false
+    end
+end)
 
-    local bodyVelocity = Instance.new("BodyVelocity")
-    bodyVelocity.Velocity = Vector3.new(0, 0, 0) -- 初始速度为零
-    bodyVelocity.Parent = shuriken
+tab8:Button("Kill tool", function()
+local Tool = Instance.new("Tool")
+local Handle = Instance.new("Part")
+local ClickDetector = Instance.new("ClickDetector")
+local DamageRadius = 5
 
-    shuriken.Touched:Connect(function(hit)
-        local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
-        if hitPlayer and hitPlayer ~= player then
-            local humanoid = hit.Parent:FindFirstChild("Humanoid")
-            if humanoid then
-                humanoid:TakeDamage(100)
-                humanoid.Health = 0 -- 设置健康值为零
-                humanoid.BreakJointsOnDeath = true -- 确保BreakJointsOnDeath为true
-                shuriken:Destroy()
+-- 设置 Tool 属性
+Tool.Name = "KillTool"
+Tool.RequiresHandle = true
+Tool.CanBeDropped = false
+Tool.Parent = game.Players.LocalPlayer.Backpack
+
+-- 设置 Handle 属性
+Handle.Name = "Handle"
+Handle.Size = Vector3.new(1, 1, 1)
+Handle.BrickColor = BrickColor.new("Bright red")
+Handle.Parent = Tool
+
+-- 设置 ClickDetector 属性
+ClickDetector.MaxActivationDistance = 10
+ClickDetector.Parent = Handle
+
+-- 定义道具点击事件
+ClickDetector.MouseClick:Connect(function(player)
+    spawn(function()
+        while wait(0.1) do
+            for i, v in pairs(game:GetService("Players"):GetChildren()) do
+                pcall(function()
+                    if v ~= game:GetService("Players").LocalPlayer and not v.Character:FindFirstChildOfClass("ForceField") and v.Character.Humanoid.Health > 0 then
+                        local playerPosition = game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position
+                        local targetPosition = v.Character.HumanoidRootPart.Position
+                        local distance = (playerPosition - targetPosition).Magnitude
+
+                        -- 如果距离小于 DamageRadius，则执行效果
+                        if distance <= DamageRadius then
+                            v.Character.Humanoid.Health = 0
+                            print(v.Name .. " 已被击败")
+
+                            -- 触发 meleeEvent 事件
+                            for x, c in pairs(game:GetService("Players"):GetChildren()) do
+                                if c ~= game:GetService("Players").LocalPlayer then
+                                    game.ReplicatedStorage.meleeEvent:FireServer(c)
+                                end
+                            end
+                        end
+                    end
+                end)
+                wait()
             end
         end
     end)
-
-    -- 监听触摸事件
-    local userInputService = game:GetService("UserInputService")
-    userInputService.TouchTap:Connect(function(touchPositions)
-        local touchPosition = touchPositions[1]
-        local targetPosition = workspace.CurrentCamera:ScreenPointToRay(touchPosition.X, touchPosition.Y).Origin
-        bodyVelocity.Velocity = (targetPosition - shuriken.Position).unit * 9999
-    end)
-end
-
--- 绑定触摸事件
-game:GetService("UserInputService").TouchTap:Connect(function()
-    throwShuriken()
 end)
 end)
-
 tab9:Colorpicker("Setting UI Color",Color3.fromRGB(44, 120, 224), function(t)
 lib:ChangePresetColor(Color3.fromRGB(t.R * 255, t.G * 255, t.B * 255))
 end)
