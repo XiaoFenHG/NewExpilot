@@ -515,59 +515,6 @@ tab8:Toggle("杀戮光环", false, function(state)
     end
 end)
 
-tab8:Button("Kill tool", function()
-local Tool = Instance.new("Tool")
-local Handle = Instance.new("Part")
-local ClickDetector = Instance.new("ClickDetector")
-local DamageRadius = 5
-
--- 设置 Tool 属性
-Tool.Name = "KillTool"
-Tool.RequiresHandle = true
-Tool.CanBeDropped = false
-Tool.Parent = game.Players.LocalPlayer.Backpack
-
--- 设置 Handle 属性
-Handle.Name = "Handle"
-Handle.Size = Vector3.new(1, 1, 1)
-Handle.BrickColor = BrickColor.new("Bright red")
-Handle.Parent = Tool
-
--- 设置 ClickDetector 属性
-ClickDetector.MaxActivationDistance = 10
-ClickDetector.Parent = Handle
-
--- 定义道具点击事件
-ClickDetector.MouseClick:Connect(function(player)
-    spawn(function()
-        while wait(0.1) do
-            for i, v in pairs(game:GetService("Players"):GetChildren()) do
-                pcall(function()
-                    if v ~= game:GetService("Players").LocalPlayer and not v.Character:FindFirstChildOfClass("ForceField") and v.Character.Humanoid.Health > 0 then
-                        local playerPosition = game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position
-                        local targetPosition = v.Character.HumanoidRootPart.Position
-                        local distance = (playerPosition - targetPosition).Magnitude
-
-                        -- 如果距离小于 DamageRadius，则执行效果
-                        if distance <= DamageRadius then
-                            v.Character.Humanoid.Health = 0
-                            print(v.Name .. " 已被击败")
-
-                            -- 触发 meleeEvent 事件
-                            for x, c in pairs(game:GetService("Players"):GetChildren()) do
-                                if c ~= game:GetService("Players").LocalPlayer then
-                                    game.ReplicatedStorage.meleeEvent:FireServer(c)
-                                end
-                            end
-                        end
-                    end
-                end)
-                wait()
-            end
-        end
-    end)
-end)
-end)
 tab9:Colorpicker("Setting UI Color",Color3.fromRGB(44, 120, 224), function(t)
 lib:ChangePresetColor(Color3.fromRGB(t.R * 255, t.G * 255, t.B * 255))
 end)
