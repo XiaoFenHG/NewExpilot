@@ -86,6 +86,7 @@ local function MakeDraggable(topbarobject, object)
 end
 
 function lib:Window(text, preset, closebind)
+    local UserInputService = game:GetService("UserInputService")
     CloseBind = closebind or Enum.KeyCode.RightControl
     PresetColor = preset or Color3.fromRGB(44, 120, 224)
     fs = false
@@ -93,8 +94,8 @@ function lib:Window(text, preset, closebind)
     local TabHold = Instance.new("Frame")
     local TabHoldLayout = Instance.new("UIListLayout")
     local Title = Instance.new("TextLabel")
-    local TabFolder = Instance.new("Folder")
     local DragFrame = Instance.new("Frame")
+    local ToggleButton = Instance.new("TextButton")
 
     Main.Name = "Main"
     Main.Parent = ui
@@ -136,44 +137,56 @@ function lib:Window(text, preset, closebind)
     DragFrame.BackgroundTransparency = 1.000
     DragFrame.Size = UDim2.new(0, 560, 0, 41)
 
+    ToggleButton.Name = "ToggleButton"
+    ToggleButton.Parent = ui
+    ToggleButton.Size = UDim2.new(0, 200, 0, 50)
+    ToggleButton.Position = UDim2.new(0.5, -100, 0.9, -25)
+    ToggleButton.BackgroundColor3 = PresetColor
+    ToggleButton.Text = "Toggle UI"
+    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.TextSize = 14.000
+
     Main:TweenSize(UDim2.new(0, 560, 0, 319), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, .6, true)
 
     MakeDraggable(DragFrame, Main)
 
     local uitoggled = false
-    UserInputService.InputBegan:Connect(
-        function(io, p)
-            if io.KeyCode == CloseBind then
-                if uitoggled == false then
-                    uitoggled = true
-                
-                    Main:TweenSize(
-                        UDim2.new(0, 0, 0, 0), 
-                        Enum.EasingDirection.Out, 
-                        Enum.EasingStyle.Quart, 
-                        .6, 
-                        true, 
-                        function()
-                            ui.Enabled = false
-                        end
-                    )
-                    
-                else
-                    uitoggled = false
-                    ui.Enabled = true
-                
-                    Main:TweenSize(
-                        UDim2.new(0, 560, 0, 319),
-                        Enum.EasingDirection.Out,
-                        Enum.EasingStyle.Quart,
-                        .6,
-                        true
-                    )
-                end
-            end
-        end
-    )
 
+    local function toggleUI()
+        if uitoggled == false then
+            uitoggled = true
+            Main:TweenSize(
+                UDim2.new(0, 0, 0, 0), 
+                Enum.EasingDirection.Out, 
+                Enum.EasingStyle.Quart, 
+                .6, 
+                true, 
+                function()
+                    Main.Visible = false
+                end
+            )
+        else
+            uitoggled = false
+            Main.Visible = true
+            Main:TweenSize(
+                UDim2.new(0, 560, 0, 319),
+                Enum.EasingDirection.Out,
+                Enum.EasingStyle.Quart,
+                .6,
+                true
+            )
+        end
+    end
+
+    ToggleButton.MouseButton1Click:Connect(toggleUI)
+
+    UserInputService.InputBegan:Connect(function(io, p)
+        if io.KeyCode == CloseBind then
+            toggleUI()
+        end
+    end)
+end
     TabFolder.Name = "TabFolder"
     TabFolder.Parent = Main
 
