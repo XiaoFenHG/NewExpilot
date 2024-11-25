@@ -1,3 +1,4 @@
+--lazy write(Ai Create)
 -- espLib.lua
 local ESP = {}
 
@@ -136,4 +137,27 @@ runService.RenderStepped:Connect(function()
                     -- Display distance
                     if ESP.Settings.Distances then
                         local distance = ESP:CalculateDistance(object)
-                        loca
+                        local distancePosition = Vector2.new(pos.X, pos.Y - 60)
+                        ESP:DisplayName(object, distancePosition, tostring(distance) .. " studs")
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- Function to update ESP settings
+function ESP:UpdateSettings(newSettings)
+    for key, value in pairs(newSettings) do
+        self.Settings[key] = value
+    end
+end
+
+-- Set ESP metatable
+setmetatable(ESP, {
+    __index = function(table, key)
+        return ESP[key]
+    end
+})
+
+_G.ESP = ESP
