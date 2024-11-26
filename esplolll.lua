@@ -1,4 +1,3 @@
--- main.lua
 -- espLib.lua
 local ESP = {}
 
@@ -24,22 +23,39 @@ local runService = game:GetService("RunService")
 local camera = workspace.CurrentCamera
 local players = game:GetService("Players")
 
+-- Store created ESP elements
+local ESPObjects = {}
+
 -- Function to create a BillboardGui
-function ESP:CreateBillboardGui(object, text)
+function ESP:CreateBillboardGui(object)
     local billboard = Instance.new("BillboardGui")
     billboard.Adornee = object
-    billboard.Size = UDim2.new(0, 200, 0, 50)
+    billboard.Size = UDim2.new(0, 200, 0, 100)
     billboard.StudsOffset = Vector3.new(0, 3, 0)
     billboard.AlwaysOnTop = true
 
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.Text = text
-    label.TextColor3 = Color3.new(1, 1, 1)
-    label.TextStrokeTransparency = 0
-    label.TextScaled = true
-    label.Parent = billboard
+    -- Name Label
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Name = "NameLabel"
+    nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = ""
+    nameLabel.TextColor3 = Color3.new(1, 1, 1)
+    nameLabel.TextStrokeTransparency = 0
+    nameLabel.TextScaled = true
+    nameLabel.Parent = billboard
+
+    -- Distance Label
+    local distanceLabel = Instance.new("TextLabel")
+    distanceLabel.Name = "DistanceLabel"
+    distanceLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    distanceLabel.Position = UDim2.new(0, 0, 0.5, 0)
+    distanceLabel.BackgroundTransparency = 1
+    distanceLabel.Text = ""
+    distanceLabel.TextColor3 = Color3.new(1, 1, 1)
+    distanceLabel.TextStrokeTransparency = 0
+    distanceLabel.TextScaled = true
+    distanceLabel.Parent = billboard
 
     billboard.Parent = object
 
@@ -65,9 +81,28 @@ function ESP:HighlightObject(object)
     end
 end
 
--- Function to display name
-function ESP:DisplayName(object, text)
-    self:CreateBillboardGui(object, text or object.Name)
+-- Function to update or create ESP
+function ESP:UpdateESP(object)
+    if not ESPObjects[object] then
+        ESPObjects[object] = self:CreateBillboardGui(object)
+    end
+
+    local billboard = ESPObjects[object]
+    local nameLabel = billboard:FindFirstChild("NameLabel")
+    local distanceLabel = billboard:FindFirstChild("DistanceLabel")
+
+    if self.Settings.Names then
+        nameLabel.Text = object.Name
+    else
+        nameLabel.Text = ""
+    end
+
+    if self.Settings.Distances then
+        local distance = self:CalculateDistance(object)
+        distanceLabel.Text = "[" .. tostring(distance) .. "]"
+    else
+        distanceLabel.Text = ""
+    end
 end
 
 -- Function to get workspace asset name
@@ -92,28 +127,8 @@ runService.RenderStepped:Connect(function()
         for _, object in pairs(workspace:GetDescendants()) do
             if (object:IsA("BasePart") or (ESP.Settings.MonitorOtherObjects and object:FindFirstChild("workspaceAssetName"))) 
             and (object.Name == ESP.Settings.TargetName or ESP.Settings.TargetName == "") then
-                local pos, onScreen = camera:WorldToViewportPoint(object.Position)
-                
-                if onScreen then
-                    -- Highlight object
-                    ESP:HighlightObject(object)
-
-                    -- Display name and workspace asset name
-                    if ESP.Settings.Names then
-                        ESP:DisplayName(object, object.Name)
-
-                        local workspaceAssetName = ESP:GetWorkspaceAssetName(object)
-                        if workspaceAssetName then
-                            ESP:DisplayName(object, workspaceAssetName)
-                        end
-                    end
-
-                    -- Display distance
-                    if ESP.Settings.Distances then
-                        local distance = ESP:CalculateDistance(object)
-                        ESP:DisplayName(object, "[" .. tostring(distance) .. "]")
-                    end
-                end
+                ESP:HighlightObject(object)
+                ESP:UpdateESP(object)
             end
         end
     end
