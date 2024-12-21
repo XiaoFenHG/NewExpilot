@@ -1412,6 +1412,47 @@ a:AddToggle('pe', {
         end		
     end
 })
+local connection -- 用于存储连接
+
+a:AddToggle('pe', {
+    Text = 'Auto minecrat (AM)',
+    Default = false,
+    Tooltip = 'Walk through walls',
+    Callback = function(v)
+        if v then -- 如果按钮被激活
+            -- 创建连接
+            connection = game:GetService("RunService").RenderStepped:Connect(function()
+                if CurrentRoom.Assets:FindFirstChild("MinecartSet") then
+                    for _, Minecart in CurrentRoom.Assets.MinecartSet:GetChildren() do
+                        if Minecart:FindFirstChild("Cart") then
+                            if (LocalPlayer.Character.Collision.Position - Minecart.Main.Position).Magnitude < Minecart.Cart.PushPrompt.MaxActivationDistance * 2 then
+                                fireproximityprompt(Minecart.Cart.PushPrompt)
+                            end
+                        end
+                    end
+                end
+
+                if CurrentRoom.Assets:FindFirstChild("MinecartTracks") then
+                    for _, Track in CurrentRoom.Assets.MinecartTracks:GetChildren() do
+                        for _, MinecartMoving in Track.MinecartSet:GetChildren() do
+                            if MinecartMoving.Name == "MinecartMoving" then
+                                if (LocalPlayer.Character.Collision.Position - MinecartMoving.Main.Position).Magnitude < MinecartMoving.Cart.PushPrompt.MaxActivationDistance * 2 then
+                                    fireproximityprompt(MinecartMoving.Cart.PushPrompt)
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+        else -- 如果按钮被关闭
+            -- 断开连接
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+        end
+    end
+})
 local function handlePrompt(prompt)
     local interactions = prompt:GetAttribute("Interactions")
     if not interactions then
