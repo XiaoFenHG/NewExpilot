@@ -1371,14 +1371,14 @@ if LocalPlayer.Character then
     setupCharacter(LocalPlayer.Character)
     local canJump = LocalPlayer.Character:GetAttribute("CanJump")
     if canJump == nil then
-        LocalPlayer.Character:SetAttribute("CanJump", true)
+        LocalPlayer.Character:SetAttribute("CanJump", false)
     end
 end
 
 Tab1:AddToggle('sbt', { Text = 'Can Jump' })
 
 -- 处理SpeedBypass Toggle的OnChanged事件
-Toggles.sbt.OnChanged:Connect(function(value)
+Toggles.sbt:OnChanged(function(value)
     if value then
         -- 当开关激活时，设置CanJump为true
         if LocalPlayer.Character then
