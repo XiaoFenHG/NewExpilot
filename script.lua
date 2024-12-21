@@ -1343,18 +1343,52 @@ end
 
 local character = player.Character or player.CharacterAdded:Wait()
 
-Tab1:AddToggle('CJ', { Text = 'Player Can Jump [tset]' })
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
--- Initialize the CanJump attribute
-character:SetAttribute("CanJump", character:GetAttribute("CanJump") or false)
-local CanJump = character:GetAttribute("CanJump")
+-- 函数：设置角色的跳跃属性
+local function setupCharacter(character)
+    -- 检查并设置CanJump属性
+    if character:GetAttribute("CanJump") == nil then
+        character:SetAttribute("CanJump", false)
+    end
+end
 
--- Connect to the attribute changed signal
-character:GetAttributeChangedSignal("CanJump"):Connect(function()
-    character:SetAttribute("CanJump", Toggles.CJ.Value or CanJump)
+-- 连接角色添加事件
+LocalPlayer.CharacterAdded:Connect(function(character)
+    setupCharacter(character)
+end)
 
-    if not Toggles.CJ.Value then
-        CanJump = character:GetAttribute("CanJump")
+-- 连接能跳跃属性变化事件
+LocalPlayer.Character:GetAttributeChangedSignal("CanJump"):Connect(function()
+    -- 检查能跳跃属性并设置为正确的值
+    local canJump = LocalPlayer.Character:GetAttribute("CanJump")
+    LocalPlayer.Character:SetAttribute("CanJump", canJump)
+end)
+
+-- 初始设置
+if LocalPlayer.Character then
+    setupCharacter(LocalPlayer.Character)
+    local canJump = LocalPlayer.Character:GetAttribute("CanJump")
+    if canJump == nil then
+        LocalPlayer.Character:SetAttribute("CanJump", true)
+    end
+end
+
+Tab1:AddToggle('sbt', { Text = 'Can Jump' })
+
+-- 处理SpeedBypass Toggle的OnChanged事件
+sbt.OnChanged:Connect(function(value)
+    if value then
+        -- 当开关激活时，设置CanJump为true
+        if LocalPlayer.Character then
+            LocalPlayer.Character:SetAttribute("CanJump", true)
+        end
+    else
+        -- 当开关关闭时，设置CanJump为false
+        if LocalPlayer.Character then
+            LocalPlayer.Character:SetAttribute("CanJump", false)
+        end
     end
 end)
 local a = Tabs.Main:AddRightGroupbox('Normal Exploit')
