@@ -1378,7 +1378,7 @@ end
 Tab1:AddToggle('sbt', { Text = 'Can Jump' })
 
 -- 处理SpeedBypass Toggle的OnChanged事件
-sbt.OnChanged:Connect(function(value)
+Toggles.sbt.OnChanged:Connect(function(value)
     if value then
         -- 当开关激活时，设置CanJump为true
         if LocalPlayer.Character then
