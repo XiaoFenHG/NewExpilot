@@ -1187,7 +1187,7 @@ local function handleMinecartsAndTracksInWorkspace()
 end
 
 -- AddToggle for enabling/disabling the functionality
-a:AddToggle('Minecart Aura', {
+a:AddToggle('pe', {
     Text = 'Activate All Minecart Prompts',
     Default = false,
     Tooltip = 'Activate all Minecart related prompts',
