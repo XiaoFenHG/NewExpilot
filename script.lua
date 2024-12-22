@@ -1946,6 +1946,68 @@ a:AddToggle('this', {
         end
     end
 })
+-- AddToggle for enabling/disabling the functionality
+a:AddToggle('No Clip', {
+    Text = 'Activate All FusesPrompt',
+    Default = false,
+    Tooltip = 'Activate all FusesPrompt',
+    Callback = function(state)
+        if state then
+            -- Enable the functionality
+            local player = game.Players.LocalPlayer
+            local autoInteract = true
+
+            -- Function to trigger all FusesPrompt
+            local function triggerFusesPrompt(prompt)
+                if prompt and prompt:IsA("ProximityPrompt") then
+                    fireproximityprompt(prompt)
+                end
+            end
+
+            -- Function to handle new rooms being added
+            workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                room.DescendantAdded:Connect(function(descendant)
+                    if descendant:IsA("Model") or descendant:IsA("BasePart") then
+                        local prompt = descendant:FindFirstChild("FusesPrompt")
+                        if prompt then
+                            task.spawn(function()
+                                while autoInteract and not prompt:GetAttribute("Interactions") do
+                                    task.wait(0.1)
+                                    if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
+                                        triggerFusesPrompt(prompt)
+                                    end
+                                end
+                            end)
+                        end
+                    end
+                end)
+            end)
+
+            -- Function to handle existing rooms
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                for _, descendant in pairs(room:GetDescendants()) do
+                    if descendant:IsA("Model") or descendant:IsA("BasePart") then
+                        local prompt = descendant:FindFirstChild("FusesPrompt")
+                        if prompt then
+                            task.spawn(function()
+                                while autoInteract and not prompt:GetAttribute("Interactions") do
+                                    task.wait(0.1)
+                                    if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
+                                        triggerFusesPrompt(prompt)
+                                    end
+                                end
+                            end)
+                        end
+                    end
+                end
+            end
+
+        else
+            -- Disable the functionality
+            autoInteract = false
+        end
+    end
+})
 a:AddToggle('No Clip', {
     Text = 'Book / Breaker aura',
     Default = false,
