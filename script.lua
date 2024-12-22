@@ -1150,7 +1150,78 @@ RightGroup1:AddInput('EntityEventTextbox', {
         print('[cb] Custom entity event message updated:', customEntityMessage)
     end
 })
+-- Flag to control the state of the toggle
+local Interact = false
 
+-- Function to trigger a prompt
+local function triggerPrompt(prompt)
+    if prompt and prompt:IsA("ProximityPrompt") then
+        fireproximityprompt(prompt)
+    end
+end
+
+-- Function to handle MinecartSet and MinecartTracks in the entire workspace
+local function handleMinecartsAndTracksInWorkspace()
+    local player = game.Players.LocalPlayer
+
+    for _, part in pairs(game.Workspace:GetDescendants()) do
+        if part:IsA("Model") or part:IsA("BasePart") then
+            if part:FindFirstChild("Cart") and part:FindFirstChild("Main") then
+                local mainPosition = part.Main.Position
+                if (player.Character.Collision.Position - mainPosition).Magnitude < part.Cart.PushPrompt.MaxActivationDistance * 2 then
+                    if autoInteract then
+                        triggerPrompt(part.Cart.PushPrompt)
+                    end
+                end
+            end
+            if part:FindFirstChild("MinecartMoving") and part.MinecartMoving:FindFirstChild("Main") then
+                local mainPosition = part.MinecartMoving.Main.Position
+                if (player.Character.Collision.Position - mainPosition).Magnitude < part.MinecartMoving.Cart.PushPrompt.MaxActivationDistance * 2 then
+                    if autoInteract then
+                        triggerPrompt(part.MinecartMoving.Cart.PushPrompt)
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- AddToggle for enabling/disabling the functionality
+a:AddToggle('Minecart Aura', {
+    Text = 'Activate All Minecart Prompts',
+    Default = false,
+    Tooltip = 'Activate all Minecart related prompts',
+    Callback = function(state)
+        Interact = state  -- Update the flag based on the toggle state
+
+        if state then
+            -- Enable the functionality
+            handleMinecartsAndTracksInWorkspace()
+
+            -- Listen for new parts being added to the workspace
+            game.Workspace.DescendantAdded:Connect(function(descendant)
+                if descendant:IsA("Model") or descendant:IsA("BasePart") then
+                    if descendant:FindFirstChild("Cart") and descendant:FindFirstChild("Main") then
+                        local mainPosition = descendant.Main.Position
+                        if (game.Players.LocalPlayer.Character.Collision.Position - mainPosition).Magnitude < descendant.Cart.PushPrompt.MaxActivationDistance * 2 then
+                            if autoInteract then
+                                triggerPrompt(descendant.Cart.PushPrompt)
+                            end
+                        end
+                    end
+                    if descendant:FindFirstChild("MinecartMoving") and descendant.MinecartMoving:FindFirstChild("Main") then
+                        local mainPosition = descendant.MinecartMoving.Main.Position
+                        if (game.Players.LocalPlayer.Character.Collision.Position - mainPosition).Magnitude < descendant.MinecartMoving.Cart.PushPrompt.MaxActivationDistance * 2 then
+                            if autoInteract then
+                                triggerPrompt(descendant.MinecartMoving.Cart.PushPrompt)
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
+})
 local MiscGroupBox = Tabs.Main:AddRightGroupbox("Misc") do
     MiscGroupBox:AddButton({
         Text = "Revive <Need Robux>",
