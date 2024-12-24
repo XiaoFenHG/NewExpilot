@@ -2486,6 +2486,86 @@ MainGroup3:AddToggle('No Clip', {
         end
     end
 })
+RightGroup1:AddToggle('No Clip', {
+    Text = 'Code [Padlock]',
+    Default = false,
+    Tooltip = 'Walk through walls',
+    Callback = function(val)
+        local addConnect
+        local plr = game.Players.LocalPlayer
+        local char = plr.Character or plr.CharacterAdded:Wait() -- Ensure char is defined
+
+        if val then
+            -- Listen for LibraryHintPaper tool addition
+            addConnect = char.ChildAdded:Connect(function(v)
+                if v:IsA("Tool") and v.Name == "LibraryHintPaper" then
+                    task.wait()
+                    local PadlockCode
+
+                    print("[LOG] Checking current room...")
+
+                    if LocalPlayer:GetAttribute("CurrentRoom") <= 51 then
+                        local Padlock = workspace.CurrentRooms["50"].Door:FindFirstChild("Padlock")
+
+                        if Padlock then
+                            print("[LOG] Found padlock. Attempting to fire server with padlock code...")
+                            game.ReplicatedStorage.RemotesFolder.PL:FireServer(PadlockCode)
+                        end
+                    end
+
+                    task.spawn(function()
+                        print("[LOG] Task started. Looking for LibraryHintPaper...")
+
+                        local Paper = HasItem("LibraryHintPaper")
+
+                        if not Paper then
+                            for _, Player in game.Players:GetPlayers() do
+                                if Player ~= LocalPlayer and (Player.Character:FindFirstChild("LibraryHintPaper") or Player.Backpack:FindFirstChild("LibraryHintPaper")) then
+                                    Paper = Player.Character:FindFirstChild("LibraryHintPaper") or Player.Backpack:FindFirstChild("LibraryHintPaper")
+                                    print("[LOG] Found LibraryHintPaper from another player.")
+                                end
+                            end
+                        else
+                            print("[LOG] Found LibraryHintPaper.")
+                        end
+
+                        if Paper and Paper:FindFirstChild("UI") and Rooms["50"].Door:FindFirstChild("Padlock") then
+                            print("[LOG] Found paper UI and padlock in room 50.")
+
+                            local Code = ""    
+                            for _, x in Paper.UI:GetChildren() do
+                                if tonumber(x.Name) then
+                                    for _, y in LocalPlayer.PlayerGui.PermUI.Hints:GetChildren() do
+                                        if y.Name == "Icon" then
+                                            if y.ImageRectOffset == x.ImageRectOffset then
+                                                Code = Code .. y.TextLabel.Text
+                                                print("[LOG] Adding digit to code: " .. y.TextLabel.Text)
+                                            end
+                                        end
+                                    end
+                                end
+
+                                if #Code == 5 then
+                                    print("[LOG] Complete padlock code found: " .. Code)
+                                    Notify("Padlock code found!", "The code is... '" .. Code .. "', this is also printed in console!", 10)
+                                    PadlockCode_N = Code
+                                    PadlockCode = Code
+                                end
+
+                                if PadlockCode then break end
+                            end
+                        end
+                    end)
+                end
+            end)
+        else
+            -- If toggled off, disconnect the event
+            if addConnect then
+                addConnect:Disconnect()
+            end
+        end
+    end
+})
 Library:SetWatermarkVisibility(true)
 
 -- Example of dynamically-updating watermark with common traits (fps and ping)
