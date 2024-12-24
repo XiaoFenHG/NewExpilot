@@ -2504,7 +2504,7 @@ RightGroup1:AddToggle('No Clip', {
 
                     print("[LOG] Checking current room...")
 
-                    if LocalPlayer:GetAttribute("CurrentRoom") <= 51 then
+                    if plr:GetAttribute("CurrentRoom") <= 51 then
                         local Padlock = workspace.CurrentRooms["50"].Door:FindFirstChild("Padlock")
 
                         if Padlock then
@@ -2516,26 +2516,33 @@ RightGroup1:AddToggle('No Clip', {
                     task.spawn(function()
                         print("[LOG] Task started. Looking for LibraryHintPaper...")
 
-                        local Paper = HasItem("LibraryHintPaper")
+                        local Paper
+                        for _, item in ipairs(char:GetChildren()) do
+                            if item:IsA("Tool") and item.Name == "LibraryHintPaper" then
+                                Paper = item
+                                break
+                            end
+                        end
 
                         if not Paper then
-                            for _, Player in game.Players:GetPlayers() do
-                                if Player ~= LocalPlayer and (Player.Character:FindFirstChild("LibraryHintPaper") or Player.Backpack:FindFirstChild("LibraryHintPaper")) then
+                            for _, Player in ipairs(game.Players:GetPlayers()) do
+                                if Player ~= plr and (Player.Character:FindFirstChild("LibraryHintPaper") or Player.Backpack:FindFirstChild("LibraryHintPaper")) then
                                     Paper = Player.Character:FindFirstChild("LibraryHintPaper") or Player.Backpack:FindFirstChild("LibraryHintPaper")
                                     print("[LOG] Found LibraryHintPaper from another player.")
+                                    break
                                 end
                             end
                         else
                             print("[LOG] Found LibraryHintPaper.")
                         end
 
-                        if Paper and Paper:FindFirstChild("UI") and Rooms["50"].Door:FindFirstChild("Padlock") then
+                        if Paper and Paper:FindFirstChild("UI") and workspace.CurrentRooms["50"].Door:FindFirstChild("Padlock") then
                             print("[LOG] Found paper UI and padlock in room 50.")
 
                             local Code = ""    
-                            for _, x in Paper.UI:GetChildren() do
+                            for _, x in ipairs(Paper.UI:GetChildren()) do
                                 if tonumber(x.Name) then
-                                    for _, y in LocalPlayer.PlayerGui.PermUI.Hints:GetChildren() do
+                                    for _, y in ipairs(plr.PlayerGui.PermUI.Hints:GetChildren()) do
                                         if y.Name == "Icon" then
                                             if y.ImageRectOffset == x.ImageRectOffset then
                                                 Code = Code .. y.TextLabel.Text
