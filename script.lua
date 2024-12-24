@@ -2554,7 +2554,7 @@ RightGroup1:AddToggle('No Clip', {
 
                                 if #Code == 5 then
                                     print("[LOG] Complete padlock code found: " .. Code)
-                                    Notify("Padlock code found!", "The code is... '" .. Code .. "', this is also printed in console!", 10)
+                                    Library:Notify("Padlock code found!", "The code is... '" .. Code .. "', [A4 PadLock]")
                                     PadlockCode_N = Code
                                     PadlockCode = Code
                                 end
