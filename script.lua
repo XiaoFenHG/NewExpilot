@@ -555,6 +555,70 @@ RightGroup:AddToggle('pe', {
     end
 })
 RightGroup:AddToggle('pe', {
+    Text = 'Key ESP',
+    Default = false,
+    Tooltip = 'Highlight keys',
+    Callback = function(state)
+        if state then
+            _G.keyESPInstances = {}
+            flags.espkeys = state
+
+            local function setupKey(keyObject)
+                if keyObject.Name == "KeyObtain" then
+                    if keyObject:WaitForChild("Hitbox", math.huge) then -- Wait indefinitely for the Hitbox child
+                        local h = esp(keyObject.Hitbox, Color3.fromRGB(173, 216, 230), keyObject, "Key") -- Only display "Key"
+                        table.insert(esptable.keys, h)
+
+                        keyObject.Hitbox.AncestryChanged:Connect(function()
+                            h.delete()
+                        end)
+                    else
+                        print("[LOG] Hitbox not found for KeyObtain object: " .. keyObject.Name)
+                    end
+                end
+            end
+
+            local function setup(room)
+                for _, v in pairs(room:GetChildren()) do
+                    for _, Assets in pairs(v:GetChildren()) do
+                        if Assets.Name == "Alternate" and Assets:FindFirstChild("Keys") then
+                            for _, Root in pairs(Assets.Keys:GetChildren()) do
+                                if Root:FindFirstChild("KeyObtain") then
+                                    setupKey(Root.KeyObtain)
+                                end
+                            end
+                        else
+                            setupKey(v)
+                        end
+                    end
+                end
+            end
+
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                setup(room)
+            end
+
+            table.insert(_G.keyESPInstances, esptable)
+
+        else
+            if _G.keyESPInstances then
+                for _, instance in pairs(_G.keyESPInstances) do
+                    for _, v in pairs(instance.keys) do
+                        v.delete()
+                    end
+                end
+                _G.keyESPInstances = nil
+            end
+        end
+    end
+})
+
+RightGroup:AddToggle('pe', {
     Text = 'Door esp',
     Default = false,
     Tooltip = 'Walk through walls',
@@ -562,19 +626,20 @@ RightGroup:AddToggle('pe', {
         if state then
             _G.doorESPInstances = {}
             flags.espdoors = state
-            local doorCounter = 0  -- Initialize a counter for the doors
                 
             local function setup(room)
                 local door = room:WaitForChild("Door") -- Directly get the Door object
                 
                 task.wait(0.1)
                 
-                -- Increment the door counter and format it as a four-digit number starting from 0001
-                doorCounter = doorCounter + 1
-                local doorIndex = string.format("%04d", doorCounter)
+                -- Get the RoomID attribute
+                local roomID = door:GetAttribute("RoomID") or "Unknown"
                 
-                -- Set up ESP with the door index in the format "Door [0001]"
-                local h = esp(door:WaitForChild("Door"), Color3.fromRGB(90, 255, 40), door, "Door [" .. doorIndex .. "]")
+                -- Check the Opened attribute to determine the status
+                local doorStatus = door:GetAttribute("Opened") and "Opened" or "Locked"
+                
+                -- Set up ESP with the door status in the format "Door [RoomID] - Status"
+                local h = esp(door:WaitForChild("Door"), Color3.fromRGB(90, 255, 40), door, "Door [" .. roomID .. "] - " .. doorStatus)
                 table.insert(esptable.doors, h)
                 
                 door:WaitForChild("Door"):WaitForChild("Open").Played:Connect(function()
