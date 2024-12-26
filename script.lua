@@ -2430,45 +2430,6 @@ MainGroup3:AddToggle('pe', {
     end
 })
 
-MainGroup3:AddToggle('No Clip', {
-    Text = 'Expilot Seek',
-    Default = false,
-    Tooltip = 'Walk through walls',
-    Callback = function(val)
-        flags.noseek = val  -- Set the flags.noseek value
-
-        if flags.noseek then
-            local addconnect
-            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
-                local trigger = room:WaitForChild("TriggerEventCollision", 2)
-
-                if trigger then
-                    -- Find BasePart named "Primary" within the trigger
-                    local primaryPart = trigger:FindFirstChild("PrimaryPart")
-                    if primaryPart and primaryPart:IsA("BasePart") then
-                        if fireTouch then
-                            repeat
-                                fireTouch(primaryPart, rootPart, 1)
-                                task.wait()
-                                fireTouch(primaryPart, rootPart, 0)
-                                task.wait()
-                            until not flags.noseek
-                        else
-                            primaryPart.Position = rootPart.Position + Vector3.new(0, primaryPart.Size.Y, 0)
-                        end
-                    end
-
-                    -- Optionally remove the trigger
-                    -- trigger:Destroy()
-                end
-            end)
-
-            -- Wait until noseek is disabled, then disconnect
-            repeat task.wait() until not flags.noseek
-            addconnect:Disconnect()
-        end
-    end
-})
 
 destroy = "Remove Event:Destroy giggle now"
 destroy1 = "Remove Event:Destroy GloomPile now"
@@ -2638,6 +2599,65 @@ RightGroup1:AddToggle('No Clip', {
         end
     end
 })
+RightGroup:AddToggle('pe', {
+    Text = 'GrumbleRig ESP',
+    Default = false,
+    Tooltip = 'Highlight GrumbleRig',
+    Callback = function(state)
+        if state then
+            _G.grumbleRigESPInstances = {}
+            flags.espGrumbleRig = state
+
+            local function setupGrumbleRig(grumbleRigObject)
+                if grumbleRigObject.Name == "GrumbleRig" then
+                    local h = esp(grumbleRigObject, Color3.fromRGB(173, 216, 230), grumbleRigObject, "Grumble King") -- Light Blue color
+                    table.insert(esptable.grumbleRigs, h)
+
+                    grumbleRigObject.AncestryChanged:Connect(function()
+                        h.delete()
+                    end)
+                end
+            end
+
+            local function setup(room)
+                for _, v in pairs(room:GetChildren()) do
+                    if v.Name == "Assets" then
+                        for _, asset in pairs(v:GetChildren()) do
+                            if asset:FindFirstChild("GrumbleRig") then
+                                for _, root in pairs(asset.GrumbleRig:GetChildren()) do
+                                    if root:FindFirstChild("GrumbleRig") then
+                                        setupGrumbleRig(root.GrumbleRig)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+            
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                setup(room)
+            end
+
+            table.insert(_G.grumbleRigESPInstances, esptable)
+
+        else
+            if _G.grumbleRigESPInstances then
+                for _, instance in pairs(_G.grumbleRigESPInstances) do
+                    for _, v in pairs(instance.grumbleRigs) do
+                        v.delete()
+                    end
+                end
+                _G.grumbleRigESPInstances = nil
+            end
+        end
+    end
+})
 Library:SetWatermarkVisibility(true)
 
 -- Example of dynamically-updating watermark with common traits (fps and ping)
@@ -2714,3 +2734,23 @@ ThemeManager:ApplyToTab(Tabs['UI Settings'])
 -- You can use the SaveManager:LoadAutoloadConfig() to load a config
 -- which has been marked to be one that auto loads!
 SaveManager:LoadAutoloadConfig()
+MainGroup3:AddToggle('pe', {
+    Text = 'Seek Remove Handler [SRH]',
+    Default = false,
+    Tooltip = 'Handle TriggerEventCollision events',
+    Callback = function(state)
+        if state then
+            workspace.CurrentRooms.DescendantAdded:Connect(function(v)
+                if v.Name == "TriggerEventCollision" then
+                    while task.wait() and v and #v:GetChildren() > 0 do
+                        local Part = v:FindFirstChildWhichIsA("BasePart")
+
+                        if Part and state then
+                            firetouchinterest(LocalPlayer.Character.Collision, Part, true and false)
+                        end
+                    end
+                end
+            end)
+        end
+    end
+})
