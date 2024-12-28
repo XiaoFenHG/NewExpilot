@@ -3,20 +3,60 @@ local Camera = game.Workspace.CurrentCamera
 local Players = game:GetService("Players")
 local connection
 -- Function to create a smoother and more advanced highlight with effects
-local function createHighlight(part, color)
+local function createHighlightBoxWithCylinders(part, color)
     if not part or not part:IsA("BasePart") then
         return nil
     end
 
-    local highlight = Instance.new("Highlight")
-    highlight.Adornee = part
-    highlight.FillColor = color
-    highlight.OutlineColor = color
-    highlight.OutlineTransparency = 0.7
-    highlight.FillTransparency = 0.5
-    highlight.Parent = part
+    local highlightBox = Instance.new("Part")
+    highlightBox.Size = part.Size + Vector3.new(0.2, 0.2, 0.2) -- Slightly larger than the part
+    highlightBox.Transparency = 1  -- Make the box itself invisible
+    highlightBox.Anchored = true
+    highlightBox.CanCollide = false
+    highlightBox.CFrame = part.CFrame
+    highlightBox.Parent = workspace
 
-    return highlight
+    local function createCornerCylinder(position, size)
+        local cylinder = Instance.new("Part")
+        cylinder.Shape = Enum.PartType.Cylinder
+        cylinder.Size = size
+        cylinder.Color = color
+        cylinder.Transparency = 0.5
+        cylinder.Anchored = true
+        cylinder.CanCollide = false
+        cylinder.Material = Enum.Material.Neon
+        cylinder.CFrame = position
+        cylinder.Parent = highlightBox
+        return cylinder
+    end
+
+    local cornerPositions = {
+        CFrame.new(-highlightBox.Size.X / 2, -highlightBox.Size.Y / 2, -highlightBox.Size.Z / 2),
+        CFrame.new(highlightBox.Size.X / 2, -highlightBox.Size.Y / 2, -highlightBox.Size.Z / 2),
+        CFrame.new(-highlightBox.Size.X / 2, highlightBox.Size.Y / 2, -highlightBox.Size.Z / 2),
+        CFrame.new(highlightBox.Size.X / 2, highlightBox.Size.Y / 2, -highlightBox.Size.Z / 2),
+        CFrame.new(-highlightBox.Size.X / 2, -highlightBox.Size.Y / 2, highlightBox.Size.Z / 2),
+        CFrame.new(highlightBox.Size.X / 2, -highlightBox.Size.Y / 2, highlightBox.Size.Z / 2),
+        CFrame.new(-highlightBox.Size.X / 2, highlightBox.Size.Y / 2, highlightBox.Size.Z / 2),
+        CFrame.new(highlightBox.Size.X / 2, highlightBox.Size.Y / 2, highlightBox.Size.Z / 2),
+    }
+    
+    local cylinderSize = Vector3.new(0.1, highlightBox.Size.Y, 0.1)  -- Adjust cylinder size as needed
+
+    for _, pos in pairs(cornerPositions) do
+        createCornerCylinder(highlightBox.CFrame * pos, cylinderSize)
+    end
+
+    local function updatePosition()
+        if part:IsDescendantOf(workspace) then
+            highlightBox.CFrame = part.CFrame
+        else
+            highlightBox:Destroy()
+        end
+    end
+
+    game:GetService("RunService").RenderStepped:Connect(updatePosition)
+    return highlightBox
 end
 
 -- Enhanced Billboard GUI with shadow and opacity improvements
