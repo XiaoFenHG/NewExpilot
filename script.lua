@@ -555,6 +555,7 @@ RightGroup:AddToggle('pe', {
     end
 })
 RightGroup:AddToggle('pe', {
+RightGroup:AddToggle('pe', {
     Text = 'Key ESP',
     Default = false,
     Tooltip = 'Highlight keys',
@@ -565,47 +566,47 @@ RightGroup:AddToggle('pe', {
 
             local function setupKey(keyObject)
                 if keyObject.Name == "KeyObtain" then
-                    if keyObject:WaitForChild("Hitbox", 1) then -- Wait indefinitely for the Hitbox child
-                        local h = esp(keyObject.Hitbox, Color3.fromRGB(173, 216, 230), keyObject, "Key") -- Only display "Key"
-                        table.insert(esptable.keys, h)
+                    local h = esp(keyObject, Color3.fromRGB(173, 216, 230), keyObject, "Key") -- 高亮显示KeyObtain
+                    table.insert(esptable.keys, h)
 
-                        keyObject.Hitbox.AncestryChanged:Connect(function()
-                            h.delete()
-                        end)
-                    else
-                        print("[LOG] Hitbox not found for KeyObtain object: " .. keyObject.Name)
-                    end
+                    keyObject.AncestryChanged:Connect(function()
+                        h.delete()
+                    end)
                 end
             end
 
-            local function setup(room)
-                for _, v in pairs(room:GetChildren()) do
-                    for _, Assets in pairs(v:GetChildren()) do
-                        if Assets.Name == "Alternate" and Assets:FindFirstChild("Keys") then
-                            for _, Root in pairs(Assets.Keys:GetChildren()) do
-                                if Root:FindFirstChild("KeyObtain") then
-                                    setupKey(Root.KeyObtain)
-                                end
+            local function searchForKeys()
+                while flags.espkeys do
+                    for _, service in pairs(game:GetChildren()) do
+                        for _, v in pairs(service:GetDescendants()) do
+                            if v.Name == "KeyObtain" then
+                                setupKey(v)
                             end
-                        else
-                            setupKey(v)
                         end
                     end
+                    task.wait(1) -- 每隔一秒搜索一次
                 end
             end
 
-            local addconnect
-            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
-                setup(room)
-            end)
-            
-            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                setup(room)
+            -- 初始搜索一次
+            for _, service in pairs(game:GetChildren()) do
+                for _, v in pairs(service:GetDescendants()) do
+                    if v.Name == "KeyObtain" then
+                        setupKey(v)
+                    end
+                end
             end
+
+            -- 开始循环搜索
+            connection = task.spawn(searchForKeys)
 
             table.insert(_G.keyESPInstances, esptable)
 
         else
+            if connection then
+                connection:Cancel()
+                connection = nil
+            end
             if _G.keyESPInstances then
                 for _, instance in pairs(_G.keyESPInstances) do
                     for _, v in pairs(instance.keys) do
