@@ -565,7 +565,7 @@ RightGroup:AddToggle('pe', {
 
             local function setupKey(keyObject)
                 if keyObject.Name == "KeyObtain" then
-                    if keyObject:WaitForChild("Hitbox", math.huge) then -- Wait indefinitely for the Hitbox child
+                    if keyObject:WaitForChild("Hitbox", 1) then -- Wait indefinitely for the Hitbox child
                         local h = esp(keyObject.Hitbox, Color3.fromRGB(173, 216, 230), keyObject, "Key") -- Only display "Key"
                         table.insert(esptable.keys, h)
 
@@ -1251,7 +1251,7 @@ local RunService = game:GetService("RunService")
 local Camera = game:GetService("Workspace").CurrentCamera
 
 Tab1:AddDropdown('SpeedModeDropdown', {
-    Values = { 'WalkSpeed', 'CFrame' },
+    Values = { 'WalkSpeed', 'CFrame Yield', 'Dash', 'Sprint' },
     Default = 1,
     Multi = false,
     Text = 'Speed Mode',
@@ -1286,16 +1286,17 @@ local function updateSpeed()
 
     if speedMode == 'WalkSpeed' then
         humanoid.WalkSpeed = originalWalkSpeed + sliderValue
-    elseif speedMode == 'CFrame' then
-        local currentPosition = character.HumanoidRootPart.Position
-        local distanceMoved = (currentPosition - lastPosition).magnitude
-
-        if distanceMoved > 0 then
-            local direction = character.HumanoidRootPart.CFrame.LookVector
-            character.HumanoidRootPart.CFrame = character.HumanoidRootPart.CFrame + direction * sliderValue
+    elseif speedMode == 'CFrame Infinite Yield' then
+        -- Implementing infinite yield-like movement
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            local newPosition = rootPart.CFrame.Position + (rootPart.CFrame.LookVector * sliderValue)
+            rootPart.CFrame = CFrame.new(newPosition)
         end
-
-        lastPosition = currentPosition
+    elseif speedMode == 'Dash' then
+        humanoid.WalkSpeed = originalWalkSpeed * 3
+    elseif speedMode == 'Sprint' then
+        humanoid.WalkSpeed = originalWalkSpeed * 2
     end
 end
 
@@ -1319,7 +1320,6 @@ end)
 Options.FOVSlider:OnChanged(function()
     updateFOV()
 end)
-
 -- Tab1 中的切换按钮
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
