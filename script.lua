@@ -1,7 +1,7 @@
 local RunService = game:GetService("RunService")
 local Camera = game.Workspace.CurrentCamera
 local Players = game:GetService("Players")
-
+local connection
 -- Function to create a smoother and more advanced highlight with effects
 local function createHighlight(part, color)
     local highlight = Instance.new("Highlight")
@@ -554,7 +554,6 @@ RightGroup:AddToggle('pe', {
         end
     end
 })
-RightGroup:AddToggle('pe', {
 RightGroup:AddToggle('pe', {
     Text = 'Key ESP',
     Default = false,
@@ -2744,7 +2743,6 @@ ThemeManager:ApplyToTab(Tabs['UI Settings'])
 
 -- You can use the SaveManager:LoadAutoloadConfig() to load a config
 -- which has been marked to be one that auto loads!
-local connection
 
 SaveManager:LoadAutoloadConfig()
 MainGroup3:AddToggle('pe', {
