@@ -1356,7 +1356,10 @@ Toggles.SpeedBypass:OnChanged(function(value)
 end)
 -- Create the toggle and slider
 -- Create the toggle and slider
-Tab1:AddToggle('TranslucentHidingSpot', { Text = 'Hide transparency [Toggle]' })
+Tab1:AddToggle('TranslucentHidingSpot', {
+    Text = 'Hide transparency [Toggle]'
+})
+
 Tab1:AddSlider('HidingTransparency', {
     Text = 'Hide transparency',
     Default = 1,
@@ -1365,41 +1368,48 @@ Tab1:AddSlider('HidingTransparency', {
     Rounding = 1
 })
 
+local connection
+
 -- Function to handle transparency changes
 Toggles.TranslucentHidingSpot:OnChanged(function(value)
     local Character = game.Players.LocalPlayer.Character -- Reference the player's character
     if Character and value and Character:GetAttribute("Hiding") then
-        for _, obj in pairs(workspace.CurrentRooms:GetDescendants()) do
-            if not obj:IsA("ObjectValue") and obj.Name ~= "HiddenPlayer" then continue end
+        connection = task.spawn(function()
+            while value do
+                for _, obj in pairs(workspace.CurrentRooms:GetDescendants()) do
+                    if not obj:IsA("ObjectValue") and obj.Name ~= "HiddenPlayer" then continue end
 
-            if obj.Value == Character then
-                task.spawn(function()
-                    local affectedParts = {}
-                    for _, v in pairs(obj.Parent:GetChildren()) do
-                        if not v:IsA("BasePart") then continue end
+                    if obj.Value == Character then
+                        local affectedParts = {}
+                        for _, v in pairs(obj.Parent:GetChildren()) do
+                            if not v:IsA("BasePart") then continue end
 
-                        v.Transparency = Options.HidingTransparency.Value
-                        table.insert(affectedParts, v)
-                    end
-
-                    repeat task.wait()
-                        for _, part in pairs(affectedParts) do
-                            task.wait()
-                            part.Transparency = Options.HidingTransparency.Value
+                            v.Transparency = Options.HidingTransparency.Value
+                            table.insert(affectedParts, v)
                         end
-                    until not Character:GetAttribute("Hiding") or not Toggles.TranslucentHidingSpot.Value
-                    
-                    for _, v in pairs(affectedParts) do
-                        v.Transparency = 0
-                    end
-                end)
 
-                break
+                        repeat task.wait()
+                            for _, part in pairs(affectedParts) do
+                                task.wait()
+                                part.Transparency = Options.HidingTransparency.Value
+                            end
+                        until not Character:GetAttribute("Hiding") or not Toggles.TranslucentHidingSpot.Value
+                        
+                        for _, v in pairs(affectedParts) do
+                            v.Transparency = 0
+                        end
+
+                        break
+                    end
+                end
+                task.wait() -- To avoid infinite loop locking the thread
             end
-        end
+        end)
+    elseif connection then
+        connection:Cancel()
+        connection = nil
     end
 end)
-
 -- Ensure the character is loaded
 local player = game.Players.LocalPlayer
 
@@ -2733,6 +2743,8 @@ ThemeManager:ApplyToTab(Tabs['UI Settings'])
 
 -- You can use the SaveManager:LoadAutoloadConfig() to load a config
 -- which has been marked to be one that auto loads!
+local connection
+
 SaveManager:LoadAutoloadConfig()
 MainGroup3:AddToggle('pe', {
     Text = 'Seek Remove Handler [SRH]',
@@ -2740,7 +2752,7 @@ MainGroup3:AddToggle('pe', {
     Tooltip = 'Handle TriggerEventCollision events',
     Callback = function(state)
         if state then
-            workspace.CurrentRooms.DescendantAdded:Connect(function(v)
+            connection = workspace.CurrentRooms.DescendantAdded:Connect(function(v)
                 if v.Name == "TriggerEventCollision" then
                     while task.wait() and v and #v:GetChildren() > 0 do
                         local Part = v:FindFirstChildWhichIsA("BasePart")
@@ -2751,6 +2763,9 @@ MainGroup3:AddToggle('pe', {
                     end
                 end
             end)
+        elseif connection then
+            connection:Disconnect()
+            connection = nil
         end
     end
 })
