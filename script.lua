@@ -4,6 +4,10 @@ local Players = game:GetService("Players")
 local connection
 -- Function to create a smoother and more advanced highlight with effects
 local function createHighlight(part, color)
+    if not part or not part:IsA("BasePart") then
+        return nil
+    end
+
     local highlight = Instance.new("Highlight")
     highlight.Adornee = part
     highlight.FillColor = color
@@ -11,6 +15,7 @@ local function createHighlight(part, color)
     highlight.OutlineTransparency = 0.7
     highlight.FillTransparency = 0.5
     highlight.Parent = part
+
     return highlight
 end
 
