@@ -279,7 +279,8 @@ local esptable = {
     guidances = {},
     generators = {},
     fuses = {},
-    timerLevers = {}
+    timerLevers = {},
+    objectsESP = {}
 }
 
 local repo = 'https://raw.githubusercontent.com/mstudio45/LinoriaLib/main/'
@@ -2818,6 +2819,141 @@ MainGroup3:AddToggle('pe', {
         elseif connection then
             connection:Disconnect()
             connection = nil
+        end
+    end
+})
+RightGroup:AddToggle('MonitorObjects', {
+    Text = 'Object ESP',
+    Default = false,
+    Tooltip = 'Monitor specified objects in CurrentRooms',
+    Callback = function(state)
+        local customSuffix = "ObjectsMonitor" -- 自定义后缀
+        local flagsName = "monitorObjects" .. customSuffix
+        local espTableName = "objectsESPInstances" .. customSuffix
+
+        local objectsToMonitor = {
+            "FigureSetup.FigureRig.Hitbox",
+            "Assets.Locker_Small.Main",
+            "Assets.Toolbox.Lid",
+            "Assets.Toolbox.Main",
+            "Assets.MinesGateButton.MainPart",
+            "Assets.MinesGate.Main",
+            "Assets.OldWoodenTable.Main",
+            "Assets.MinecartSet.Nodes.A.12",
+            "Assets.MinecartSet.Nodes.A.12.BreakBoards.BreakBase",
+            "Assets.BridgeOutSign.Outer"
+        }
+
+        local espColor = Color3.fromRGB(0, 255, 255) -- 默认颜色：青色
+
+        if state then
+            _G[espTableName] = {}
+            _G[flagsName] = state
+
+            local function check(v)
+                for _, path in ipairs(objectsToMonitor) do
+                    local parts = path:split(".")
+                    local target = v
+                    for _, part in ipairs(parts) do
+                        if target and target:FindFirstChild(part) then
+                            target = target[part]
+                        else
+                            target = nil
+                            break
+                        end
+                    end
+                    if target and v.Name == parts[#parts] then
+                        local h = esp(target, espColor, target, target.Name)
+                        table.insert(esptable.objectsESP, h)
+                    end
+                end
+            end
+
+            local function setup(room)
+                local assets = room:WaitForChild("Assets", 5)
+
+                if assets then
+                    local subaddcon
+                    subaddcon = assets.DescendantAdded:Connect(function(v)
+                        check(v)
+                    end)
+
+                    for _, v in pairs(assets:GetDescendants()) do
+                        check(v)
+                    end
+
+                    task.spawn(function()
+                        repeat task.wait() until not _G[flagsName]
+                        subaddcon:Disconnect()
+                    end)
+                end
+            end
+
+            local addconnect
+            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                setup(room)
+            end)
+
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                setup(room)
+            end
+
+            table.insert(_G[espTableName], esptable)
+        else
+            if _G[espTableName] then
+                for _, instance in pairs(_G[espTableName]) do
+                    for _, v in pairs(instance.objectsESP) do
+                        v.delete()
+                    end
+                end
+                _G[espTableName] = nil
+            end
+        end
+    end
+})
+
+RightGroup:AddToggle('MonitorMinesGenerator', {
+    Text = 'Generator ESP',
+    Default = false,
+    Tooltip = 'All MinesGenerator in CurrentRooms',
+    Callback = function(state)
+        local customSuffix = "MinesGeneratorMonitor" -- 自定义后缀
+        local flagsName = "monitorMinesGenerator" .. customSuffix
+        local espTableName = "minesGeneratorESPInstances" .. customSuffix
+
+        local function moveMinecraftSetToNode(nodeName)
+            local targetSet = workspace:FindFirstChild("MinecraftSet")
+            local currentRooms = workspace:FindFirstChild("CurrentRooms")
+
+            if targetSet and currentRooms then
+                for _, room in pairs(currentRooms:GetChildren()) do
+                    local assets = room:FindFirstChild("Assets")
+                    if assets then
+                        local targetNode = assets:FindFirstChild("MinecartSet") and assets.MinecartSet:FindFirstChild("Nodes") and assets.MinecartSet.Nodes:FindFirstChild(nodeName)
+                        if targetNode then
+                            targetSet:SetPrimaryPartCFrame(CFrame.new(targetNode.Position))
+                            break
+                        end
+                    end
+                end
+            else
+                warn("Target set or CurrentRooms not found")
+            end
+        end
+
+        if state then
+            _G[espTableName] = {}
+            _G[flagsName] = state
+
+            -- 移动 MinecraftSet 到 Node.A.12
+            moveMinecraftSetToNode("A.12")
+        else
+            -- 将 MinecraftSet 移动回 Node.A.1
+            moveMinecraftSetToNode("A.1")
+
+            if _G[espTableName] then
+                _G[espTableName] = nil
+            end
         end
     end
 })
