@@ -77,7 +77,7 @@ local function createBillboardGui(core, color, name)
     txt.Text = name
     txt.TextStrokeTransparency = 0.3
     txt.TextSize = 26
-    txt.Font = Enum.Font.Code
+    txt.Font = Enum.Font.Oswald  -- Change font to Oswald
     Instance.new("UIStroke", txt).Color = color
 
     local distanceLabel = Instance.new("TextLabel", bill)
@@ -88,12 +88,21 @@ local function createBillboardGui(core, color, name)
     distanceLabel.Position = UDim2.new(0.5, 0, 0.9, 0)
     distanceLabel.TextStrokeTransparency = 0.3
     distanceLabel.TextSize = 20
-    distanceLabel.Font = Enum.Font.Code
+    distanceLabel.Font = Enum.Font.Oswald  -- Change font to Oswald
     Instance.new("UIStroke", distanceLabel).Color = color
+
+    -- Create a Highlight instance
+    local highlight = Instance.new("Highlight")
+    highlight.Parent = core
+    highlight.Adornee = core
+    highlight.FillColor = color
+    highlight.FillTransparency = 0.5
+    highlight.OutlineColor = Color3.new(1, 1, 1)  -- White outline
+    highlight.OutlineTransparency = 0
 
     -- Update distance dynamically (without the word "Distance")
     local function updateDistance()
-        if core and core:IsDescendantOf(workspace) then
+        if core and core:IsDescendantOf(workspace) and Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local playerPos = Players.LocalPlayer.Character.HumanoidRootPart.Position
             local targetPos = core:IsA("BasePart") and core.Position or core.PrimaryPart and core.PrimaryPart.Position
 
@@ -107,7 +116,6 @@ local function createBillboardGui(core, color, name)
     RunService.RenderStepped:Connect(updateDistance)
     return bill
 end
-
 -- Advanced Tracer that follows the target and supports better visuals
 local function createTracer(target, color)
     local line = Drawing.new("Line")
