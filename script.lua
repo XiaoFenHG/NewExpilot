@@ -2912,8 +2912,8 @@ RightGroup:AddToggle('MonitorObjects', {
     end
 })
 
-RightGroup:AddToggle('MonitorMinesGenerator', {
-    Text = 'Generator ESP',
+MainGroup3:AddToggle('MonitorMinesGenerator', {
+    Text = 'Node TP',
     Default = false,
     Tooltip = 'All MinesGenerator in CurrentRooms',
     Callback = function(state)
