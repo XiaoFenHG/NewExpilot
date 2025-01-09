@@ -330,16 +330,32 @@ local Window = Library:CreateWindow({
     MenuFadeTime = 0.2
 })
 -- 获取玩家对象
-local LocalPlayer = game.Players.LocalPlayer
 
 -- 确保路径正确
-local MainUI = LocalPlayer.PlayerGui:WaitForChild("MainUI")
-local Initiator = MainUI:WaitForChild("Initiator")
-local Main_Game = Initiator:WaitForChild("Main_Game")
+-- 获取玩家对象
+local LocalPlayer = game.Players.LocalPlayer
 
--- 尝试 require 模块
-local success, err = pcall(function() require(Main_Game) end)
+-- 获取模块路径
+local success, ModuleScript = pcall(function() return require(LocalPlayer.PlayerGui.MainUI.Initiator.Main.Game) end)
 
+if success then
+    print("ModuleScript loaded successfully")
+else
+    warn("Failed to load ModuleScript: " .. tostring(ModuleScript))
+    return
+end
+
+-- 检查并修正 fovtarget 属性
+if ModuleScript then
+    if not ModuleScript.fovtarget then
+        print("fovtarget is not a valid member of ModuleScript, adding default value")
+        ModuleScript.fovtarget = 70  -- 例如，默认值为70
+    else
+        print("fovtarget found: ", ModuleScript.fovtarget)
+    end
+end
+
+-- 继续后续操作
 -- 等待3秒钟
 wait(3)
 
@@ -351,9 +367,7 @@ if not success then
 else
     -- 如果支持 require，通知成功信息
     Library:Notify("Success: require statement executed successfully!")
-end
--- CALLBACK NOTE:
--- Passing in callback functions via the initial element parameters (i.e. Callback = function(Value)...) works
+end --callback functions via the initial element parameters (i.e. Callback = function(Value)...) works
 -- HOWEVER, using Toggles/Options.INDEX:OnChanged(function(Value) ... ) is the RECOMMENDED way to do this.
 -- I strongly recommend decoupling UI code from logic code. i.e. Create your UI elements FIRST, and THEN setup :OnChanged functions later.
 
