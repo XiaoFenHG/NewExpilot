@@ -3,6 +3,7 @@ local Camera = game.Workspace.CurrentCamera
 local Players = game:GetService("Players")
 local connection
 
+local Main_Game = require(LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game)
 
 local ShadeModule = require(game.ReplicatedStorage.ClientModules.EntityModules.Shade)
 local GlitchModule = require(game.ReplicatedStorage.ClientModules.EntityModules.Glitch)
@@ -329,49 +330,7 @@ local Window = Library:CreateWindow({
     TabPadding = 8,
     MenuFadeTime = 0.2
 })
--- 获取玩家对象
 
--- 确保路径正确
--- 获取玩家对象
-local LocalPlayer = game.Players.LocalPlayer
-
--- 获取模块路径
-local success, ModuleScript = pcall(function() return require(LocalPlayer.PlayerGui.MainUI.Initiator.Main.Game) end)
-
-if success then
-    print("ModuleScript loaded successfully")
-else
-    warn("Failed to load ModuleScript: " .. tostring(ModuleScript))
-    return
-end
-
--- 检查并修正 fovtarget 属性
-if ModuleScript then
-    if not ModuleScript.fovtarget then
-        print("fovtarget is not a valid member of ModuleScript, adding default value")
-        ModuleScript.fovtarget = 70  -- 例如，默认值为70
-    else
-        print("fovtarget found: ", ModuleScript.fovtarget)
-    end
-end
-
--- 继续后续操作
--- 等待3秒钟
-wait(3)
-
-if not success then
-    -- 如果不支持 require，卸载库并通知错误信息
-    Library:Unload()
-    Library.Unloaded = true
-    Library:Notify("Error: " .. err)
-else
-    -- 如果支持 require，通知成功信息
-    Library:Notify("Success: require statement executed successfully!")
-end --callback functions via the initial element parameters (i.e. Callback = function(Value)...) works
--- HOWEVER, using Toggles/Options.INDEX:OnChanged(function(Value) ... ) is the RECOMMENDED way to do this.
--- I strongly recommend decoupling UI code from logic code. i.e. Create your UI elements FIRST, and THEN setup :OnChanged functions later.
-
--- You do not have to set your tabs & groups up this way, just a prefrence.
 local Tabs = {
 	-- Creates a new tab titled Main
 	Main = Window:AddTab('LocalPlayer'),
@@ -1401,7 +1360,7 @@ local function updateSpeed()
 end
 
 local function updateFOV()
-    Main_Game.fovtarget = Options.FOVSlider.Value
+    Camera.FieldofView = Options.FOVSlider.Value
 end
 
 RunService.RenderStepped:Connect(function()
