@@ -2,7 +2,18 @@ local RunService = game:GetService("RunService")
 local Camera = game.Workspace.CurrentCamera
 local Players = game:GetService("Players")
 local connection
--- Function to create a smoother and more advanced highlight with effects
+local Main_Game = require(LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game)
+
+local ShadeModule = require(game.ReplicatedStorage.ClientModules.EntityModules.Shade)
+local GlitchModule = require(game.ReplicatedStorage.ClientModules.EntityModules.Glitch)
+local VoidModule = require(game.ReplicatedStorage.ClientModules.EntityModules.Void)
+local SeekModule = require(game.ReplicatedStorage.ClientModules.EntityModules.Seek)
+
+local ShadeFunction = ShadeModule.stuff
+local GlitchFunction = GlitchModule.stuff
+local VoidFunction = VoidModule.stuff
+local SeekFunction = SeekModule.tease
+
 local function createHighlightBoxWithCylinders(part, color)
     if not part or not part:IsA("BasePart") then
         return nil
@@ -319,7 +330,24 @@ local Window = Library:CreateWindow({
 	TabPadding = 8,
 	MenuFadeTime = 0.2
 })
+-- 定义并获取 logservice 服务
+local logservice = game:GetService("LogService")
 
+-- 检查 require 是否支持
+local success, err = pcall(function() require(LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game) end)
+
+-- 等待3秒钟
+wait(1)
+
+if not success then
+    -- 如果不支持 require，卸载库并通知错误信息
+    Library:Unload()
+    Library.Unloaded = true
+    Library:Notify("Error: " .. err)
+else
+    -- 如果支持 require，通知成功信息
+    Library:Notify("Success: require statement executed successfully!")
+end
 -- CALLBACK NOTE:
 -- Passing in callback functions via the initial element parameters (i.e. Callback = function(Value)...) works
 -- HOWEVER, using Toggles/Options.INDEX:OnChanged(function(Value) ... ) is the RECOMMENDED way to do this.
