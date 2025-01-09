@@ -2,7 +2,7 @@ local RunService = game:GetService("RunService")
 local Camera = game.Workspace.CurrentCamera
 local Players = game:GetService("Players")
 local connection
-local Main_Game = require(LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game)
+
 
 local ShadeModule = require(game.ReplicatedStorage.ClientModules.EntityModules.Shade)
 local GlitchModule = require(game.ReplicatedStorage.ClientModules.EntityModules.Glitch)
@@ -312,32 +312,36 @@ local entityModules = ReplicatedStorage:WaitForChild("ClientModules"):WaitForChi
 local remotesFolder
 remotesFolder = ReplicatedStorage:WaitForChild("RemotesFolder", 5) -- Set a timeout
 local fireTouch
+-- Get the current date
+local date = os.date("%Y-%m-%d")
+
+-- Get the player object
+local LocalPlayer = game.Players.LocalPlayer
+
+-- Create the window with a welcome title including the player's name
 local Window = Library:CreateWindow({
-	-- Set Center to true if you want the menu to appear in the center
-	-- Set AutoShow to true if you want the menu to appear when it is created
-	-- Set Resizable to true if you want to have in-game resizable Window
-	-- Set ShowCustomCursor to false if you don't want to use the Linoria cursor
-	-- NotifySide = Changes the side of the notifications (Left, Right) (Default value = Left)
-	-- Position and Size are also valid options here
-	-- but you do not need to define them unless you are changing them :)
-
-	Title = 'Expilot Hax A4',
-	Center = true,
-	AutoShow = true,
-	Resizable = true,
-	ShowCustomCursor = true,
-	NotifySide = "Left",
-	TabPadding = 8,
-	MenuFadeTime = 0.2
+    Title = 'Welcome Player ' .. LocalPlayer.Name .. ' - Expilot Hax - ' .. date,
+    Center = true,
+    AutoShow = true,
+    Resizable = true,
+    ShowCustomCursor = true,
+    NotifySide = "Left",
+    TabPadding = 8,
+    MenuFadeTime = 0.2
 })
--- 定义并获取 logservice 服务
-local logservice = game:GetService("LogService")
+-- 获取玩家对象
+local LocalPlayer = game.Players.LocalPlayer
 
--- 检查 require 是否支持
-local success, err = pcall(function() require(LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game) end)
+-- 确保路径正确
+local MainUI = LocalPlayer.PlayerGui:WaitForChild("MainUI")
+local Initiator = MainUI:WaitForChild("Initiator")
+local Main_Game = Initiator:WaitForChild("Main_Game")
+
+-- 尝试 require 模块
+local success, err = pcall(function() require(Main_Game) end)
 
 -- 等待3秒钟
-wait(1)
+wait(3)
 
 if not success then
     -- 如果不支持 require，卸载库并通知错误信息
