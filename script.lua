@@ -1360,7 +1360,7 @@ local function updateSpeed()
 end
 
 local function updateFOV()
-    Camera.FieldofView = Options.FOVSlider.Value
+    Camera.FieldOfView = Options.FOVSlider.Value
 end
 
 RunService.RenderStepped:Connect(function()
