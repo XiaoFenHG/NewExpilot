@@ -3,17 +3,6 @@ local Camera = game.Workspace.CurrentCamera
 local Players = game:GetService("Players")
 local connection
 
-local Main_Game = require(LocalPlayer.PlayerGui.MainUI.Initiator.Main_Game)
-
-local ShadeModule = require(game.ReplicatedStorage.ClientModules.EntityModules.Shade)
-local GlitchModule = require(game.ReplicatedStorage.ClientModules.EntityModules.Glitch)
-local VoidModule = require(game.ReplicatedStorage.ClientModules.EntityModules.Void)
-local SeekModule = require(game.ReplicatedStorage.ClientModules.EntityModules.Seek)
-
-local ShadeFunction = ShadeModule.stuff
-local GlitchFunction = GlitchModule.stuff
-local VoidFunction = VoidModule.stuff
-local SeekFunction = SeekModule.tease
 
 local function createHighlightBoxWithCylinders(part, color)
     if not part or not part:IsA("BasePart") then
