@@ -1238,11 +1238,21 @@ local TabBox = Tabs.Main:AddLeftTabbox() -- Add Tabbox on left side
 local Tab1 = TabBox:AddTab('Speed')
 local Tab2 = TabBox:AddTab('Camera')
 
+-- 初始化
 local RunService = game:GetService("RunService")
-local Camera = game:GetService("Workspace").CurrentCamera
+local Players = game:GetService("Players")
 
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local originalWalkSpeed = humanoid.WalkSpeed
+local tpwalking = true
+local speedMultiplier = 10 -- 可以根据需要调整速度倍率
+
+-- 创建GUI元素
 Tab1:AddDropdown('SpeedModeDropdown', {
-    Values = { 'WalkSpeed', 'CFrame Yield', 'Dash', 'Sprint' },
+    Values = { 'WalkSpeed', 'CFrame Infinite Yield', 'Dash', 'Sprint' },
     Default = 1,
     Multi = false,
     Text = 'Speed Mode',
@@ -1264,13 +1274,7 @@ Tab2:AddSlider('FOVSlider', {
     Rounding = 1
 })
 
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-
-local originalWalkSpeed = humanoid.WalkSpeed
-local lastPosition = character.HumanoidRootPart.Position
-
+-- 更新速度
 local function updateSpeed()
     local sliderValue = Options.MySlider.Value
     local speedMode = Options.SpeedModeDropdown.Value
@@ -1278,12 +1282,8 @@ local function updateSpeed()
     if speedMode == 'WalkSpeed' then
         humanoid.WalkSpeed = originalWalkSpeed + sliderValue
     elseif speedMode == 'CFrame Infinite Yield' then
-        -- Implementing infinite yield-like movement
-        local rootPart = character:FindFirstChild("HumanoidRootPart")
-        if rootPart then
-            local newPosition = rootPart.CFrame.Position + (rootPart.CFrame.LookVector * sliderValue)
-            rootPart.CFrame = CFrame.new(newPosition)
-        end
+        tpwalking = true
+        speedMultiplier = sliderValue
     elseif speedMode == 'Dash' then
         humanoid.WalkSpeed = originalWalkSpeed * 3
     elseif speedMode == 'Sprint' then
@@ -1291,9 +1291,52 @@ local function updateSpeed()
     end
 end
 
-local function updateFOV()
-    Camera.FieldOfView = Options.FOVSlider.Value
+-- CFrame Infinite Yield 的代码
+local function onCharacterAdded(character)
+    local humanoid = character:FindFirstChildWhichIsA("Humanoid")
+    local hb = RunService.Heartbeat
+
+    local function tpWalk()
+        while tpwalking and character and humanoid and humanoid.Parent do
+            local delta = hb:Wait()
+            if humanoid.MoveDirection.Magnitude > 0 then
+                character:TranslateBy(humanoid.MoveDirection * delta * speedMultiplier)
+            end
+        end
+    end
+
+    coroutine.wrap(tpWalk)()
+
+    -- Always No Freeze 功能
+    humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+        if humanoid.WalkSpeed == 0 then
+            humanoid.WalkSpeed = originalWalkSpeed + Options.MySlider.Value
+        end
+    end)
+    
+    -- 检测并恢复 Anchored 状态
+    RunService.Heartbeat:Connect(function()
+        if character.HumanoidRootPart.Anchored == true then
+            character.HumanoidRootPart.Anchored = false
+        end
+    end)
 end
+
+local function onPlayerAdded(player)
+    player.CharacterAdded:Connect(onCharacterAdded)
+end
+
+Players.PlayerAdded:Connect(onPlayerAdded)
+
+-- 对所有现有玩家激活 tpwalk 和 Always No Freeze
+for _, player in pairs(Players:GetPlayers()) do
+    if player.Character then
+        onCharacterAdded(player.Character)
+    end
+    player.CharacterAdded:Connect(onCharacterAdded)
+end
+
+-- 初始调用更新速度
 
 RunService.RenderStepped:Connect(function()
     updateSpeed()
