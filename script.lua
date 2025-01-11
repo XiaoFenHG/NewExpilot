@@ -1250,6 +1250,18 @@ local originalWalkSpeed = humanoid.WalkSpeed
 local tpwalking = true
 local speedMultiplier = 10 -- 可以根据需要调整速度倍率
 
+-- 初始化
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+local originalWalkSpeed = humanoid.WalkSpeed
+local tpwalking = true
+local speedMultiplier = 10 -- 可以根据需要调整速度倍率
+
 -- 创建GUI元素
 Tab1:AddDropdown('SpeedModeDropdown', {
     Values = { 'WalkSpeed', 'CFrame Infinite Yield', 'Dash', 'Sprint' },
@@ -1289,6 +1301,11 @@ local function updateSpeed()
     elseif speedMode == 'Sprint' then
         humanoid.WalkSpeed = originalWalkSpeed * 2
     end
+end
+
+-- 更新视角
+local function updateFOV()
+    workspace.CurrentCamera.FieldOfView = Options.FOVSlider.Value
 end
 
 -- CFrame Infinite Yield 的代码
@@ -1336,13 +1353,8 @@ for _, player in pairs(Players:GetPlayers()) do
     player.CharacterAdded:Connect(onCharacterAdded)
 end
 
--- 初始调用更新速度
--- 监听选项变更
-Options.SpeedModeDropdown:OnChanged(updateSpeed)
-Options.MySlider:OnChanged(updateSpeed)
-Options.FOVSlider:OnChanged(function()
-    workspace.CurrentCamera.FieldOfView = Options.FOVSlider.Value
-end)
+
+
 RunService.RenderStepped:Connect(function()
     updateSpeed()
     updateFOV()
