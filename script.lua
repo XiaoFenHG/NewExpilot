@@ -1337,7 +1337,12 @@ for _, player in pairs(Players:GetPlayers()) do
 end
 
 -- 初始调用更新速度
-
+-- 监听选项变更
+Options.SpeedModeDropdown:OnChanged(updateSpeed)
+Options.MySlider:OnChanged(updateSpeed)
+Options.FOVSlider:OnChanged(function()
+    workspace.CurrentCamera.FieldOfView = Options.FOVSlider.Value
+end)
 RunService.RenderStepped:Connect(function()
     updateSpeed()
     updateFOV()
