@@ -1378,8 +1378,11 @@ local collision = character:WaitForChild("Collision")
 local collisionClone
 
 if collision then
+    -- 克隆 Collision 并设置属性
     collisionClone = collision:Clone()
     collisionClone.CanCollide = false
+    collisionClone.CanQuery = false
+    collisionClone.CanTouch = false
     collisionClone.Massless = true
     collisionClone.Name = "CollisionClone"
     
@@ -1388,8 +1391,13 @@ if collision then
     end
 
     collisionClone.Parent = character
-end
 
+    -- 设置原始 Collision 的属性
+    collision.CanCollide = true
+    collision.CanQuery = false
+    collision.CanTouch = false
+    collision.Massless = false
+end
 -- Speed Bypass Toggle
 Tab1:AddToggle('SpeedBypass', { Text = 'Speed Bypass' });
 
