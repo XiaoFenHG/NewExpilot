@@ -565,38 +565,22 @@ RightGroup:AddToggle('pe', {
                 end
             end
 
-            local function searchForKeys()
-                while flags.espkeys do
-                    for _, service in pairs(game:GetChildren()) do
-                        for _, v in pairs(service:GetDescendants()) do
-                            if v.Name == "KeyObtain" then
-                                setupKey(v)
-                            end
-                        end
-                    end
-                    task.wait(1) -- 每隔一秒搜索一次
+            -- 在工作区初始搜索一次
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v.Name == "KeyObtain" then
+                    setupKey(v)
                 end
             end
 
-            -- 初始搜索一次
-            for _, service in pairs(game:GetChildren()) do
-                for _, v in pairs(service:GetDescendants()) do
-                    if v.Name == "KeyObtain" then
-                        setupKey(v)
-                    end
+            -- 监听工作区中新增的KeyObtain对象
+            workspace.DescendantAdded:Connect(function(descendant)
+                if flags.espkeys and descendant.Name == "KeyObtain" then
+                    setupKey(descendant)
                 end
-            end
-
-            -- 开始循环搜索
-            connection = task.spawn(searchForKeys)
-
-            table.insert(_G.keyESPInstances, esptable)
+            end)
 
         else
-            if connection then
-                connection:Cancel()
-                connection = nil
-            end
+            -- 关闭ESP时清理资源
             if _G.keyESPInstances then
                 for _, instance in pairs(_G.keyESPInstances) do
                     for _, v in pairs(instance.keys) do
@@ -605,6 +589,7 @@ RightGroup:AddToggle('pe', {
                 end
                 _G.keyESPInstances = nil
             end
+            flags.espkeys = false
         end
     end
 })
@@ -619,17 +604,17 @@ RightGroup:AddToggle('pe', {
             flags.espdoors = state
                 
             local function setup(room)
-                local door = room:WaitForChild("Door") -- Directly get the Door object
+                local door = room:WaitForChild("Door") -- 直接获取Door对象
                 
                 task.wait(0.1)
                 
-                -- Get the RoomID attribute
+                -- 获取RoomID属性
                 local roomID = door:GetAttribute("RoomID") or "Unknown"
                 
-                -- Check the Opened attribute to determine the status
-                local doorStatus = door:GetAttribute("Opened") and "Opened" or "Locked"
+                -- 检查Opened属性以确定状态
+                local doorStatus = door:GetAttribute("Opened") == true and "Opened" or "Locked"
                 
-                -- Set up ESP with the door status in the format "Door [RoomID] - Status"
+                -- 设置ESP，显示门的状态，格式为"Door [RoomID] - Status"
                 local h = esp(door:WaitForChild("Door"), Color3.fromRGB(90, 255, 40), door, "Door [" .. roomID .. "] - " .. doorStatus)
                 table.insert(esptable.doors, h)
                 
@@ -647,7 +632,7 @@ RightGroup:AddToggle('pe', {
                 setup(room)
             end)
             
-            for i, room in pairs(workspace.CurrentRooms:GetChildren()) do
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
                 if room:FindFirstChild("Assets") then
                     setup(room) 
                 end
