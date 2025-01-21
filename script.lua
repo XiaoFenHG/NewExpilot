@@ -274,7 +274,20 @@ local Tabs = {
 local RightGroup = Tabs.Main3:AddLeftGroupbox('ESP')
 local LeftGroupBox = Tabs.Enity:AddLeftGroupbox('Enity')
 local Group = Tabs.Main:AddLeftGroupbox('Chat Nofiction')
-local textChannel = game:GetService("TextChatService"):WaitForChild("TextChannels"):WaitForChild("RBXGeneral")
+local TextChatService = game:GetService("TextChatService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+-- 标记是否使用旧版聊天系统
+local isLegacyChat = false
+local function chatMessage(str)
+    str = tostring(str)
+    if not isLegacyChat then
+        TextChatService.TextChannels.RBXGeneral:SendAsync(str)
+    else
+        ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(str, "All")
+    end
+end
+
+-- 定时器，每隔一段时间发送消息（例如，每10秒发送一次）
 -- Add Input Boxes and Buttons for custom entity parameters
 Group:AddToggle('entityEvent', {
     Text = 'Entity Event',
@@ -289,7 +302,7 @@ Group:AddToggle('entityEvent', {
                 local entityName = entity.Name:gsub("Moving", ""):lower()
                 local entityMessage = entityName .. " " .. (customEntityMessage or "Spawned!")
                 addAndPlaySound("ExampleSound", 4590657391)
-                textChannel:SendAsync(entityMessage) -- 使用 SendAsync 发送消息
+                chatMessage(enityMessage) -- 使用 SendAsync 发送消息
             end
 
             local function onChildAdded(child)
@@ -361,7 +374,7 @@ Group:AddToggle('No Clip', {
                             addAndPlaySound("ExampleSound", 4590657391)
                             -- Notify complete code
                             local successMessage = "The code is '" .. code .. "'."
-                            textChannel:SendAsync(successMessage) -- 使用 SendAsync 发送消息
+                            chatMessage(successMessage)
                             repeat
                                 task.wait(0.1)
                             until game:GetService("ReplicatedStorage").GameData.LatestRoom.Value ~= 50
@@ -2566,152 +2579,7 @@ MainGroup3:AddToggle('No Clip', {
         end
     end
 })
-RightGroup1:AddToggle('No Clip', {
-    Text = 'Code [Padlock]',
-    Default = false,
-    Tooltip = 'Walk through walls',
-    Callback = function(val)
-        local addConnect
-        local plr = game.Players.LocalPlayer
-        local char = plr.Character or plr.CharacterAdded:Wait() -- Ensure char is defined
 
-        if val then
-            -- Listen for LibraryHintPaper tool addition
-            addConnect = char.ChildAdded:Connect(function(v)
-                if v:IsA("Tool") and v.Name == "LibraryHintPaper" then
-                    task.wait()
-                    local PadlockCode
-
-                    print("[LOG] Checking current room...")
-
-                    if plr:GetAttribute("CurrentRoom") <= 51 then
-                        local Padlock = workspace.CurrentRooms["50"].Door:FindFirstChild("Padlock")
-
-                        if Padlock then
-                            print("[LOG] Found padlock. Attempting to fire server with padlock code...")
-                            game.ReplicatedStorage.RemotesFolder.PL:FireServer(PadlockCode)
-                        end
-                    end
-
-                    task.spawn(function()
-                        print("[LOG] Task started. Looking for LibraryHintPaper...")
-
-                        local Paper
-                        for _, item in ipairs(char:GetChildren()) do
-                            if item:IsA("Tool") and item.Name == "LibraryHintPaper" then
-                                Paper = item
-                                break
-                            end
-                        end
-
-                        if not Paper then
-                            for _, Player in ipairs(game.Players:GetPlayers()) do
-                                if Player ~= plr and (Player.Character:FindFirstChild("LibraryHintPaper") or Player.Backpack:FindFirstChild("LibraryHintPaper")) then
-                                    Paper = Player.Character:FindFirstChild("LibraryHintPaper") or Player.Backpack:FindFirstChild("LibraryHintPaper")
-                                    print("[LOG] Found LibraryHintPaper from another player.")
-                                    break
-                                end
-                            end
-                        else
-                            print("[LOG] Found LibraryHintPaper.")
-                        end
-
-                        if Paper and Paper:FindFirstChild("UI") and workspace.CurrentRooms["50"].Door:FindFirstChild("Padlock") then
-                            print("[LOG] Found paper UI and padlock in room 50.")
-
-                            local Code = ""    
-                            for _, x in ipairs(Paper.UI:GetChildren()) do
-                                if tonumber(x.Name) then
-                                    for _, y in ipairs(plr.PlayerGui.PermUI.Hints:GetChildren()) do
-                                        if y.Name == "Icon" then
-                                            if y.ImageRectOffset == x.ImageRectOffset then
-                                                Code = Code .. y.TextLabel.Text
-                                                print("[LOG] Adding digit to code: " .. y.TextLabel.Text)
-                                            end
-                                        end
-                                    end
-                                end
-
-                                if #Code == 5 then
-                                    print("[LOG] Complete padlock code found: " .. Code)
-                                    Library:Notify("Padlock code found!", "The code is... '" .. Code .. "', [A4 PadLock]")
-                                    PadlockCode_N = Code
-                                    PadlockCode = Code
-                                end
-
-                                if PadlockCode then break end
-                            end
-                        end
-                    end)
-                end
-            end)
-        else
-            -- If toggled off, disconnect the event
-            if addConnect then
-                addConnect:Disconnect()
-            end
-        end
-    end
-})
-RightGroup:AddToggle('pe', {
-    Text = 'GrumbleRig ESP',
-    Default = false,
-    Tooltip = 'Highlight GrumbleRig',
-    Callback = function(state)
-        if state then
-            _G.grumbleRigESPInstances = {}
-            flags.espGrumbleRig = state
-
-            local function setupGrumbleRig(grumbleRigObject)
-                if grumbleRigObject.Name == "GrumbleRig" then
-                    local h = esp(grumbleRigObject, Color3.fromRGB(173, 216, 230), grumbleRigObject, "Grumble King") -- Light Blue color
-                    table.insert(esptable.grumbleRigs, h)
-
-                    grumbleRigObject.AncestryChanged:Connect(function()
-                        h.delete()
-                    end)
-                end
-            end
-
-            local function setup(room)
-                for _, v in pairs(room:GetChildren()) do
-                    if v.Name == "Assets" then
-                        for _, asset in pairs(v:GetChildren()) do
-                            if asset:FindFirstChild("GrumbleRig") then
-                                for _, root in pairs(asset.GrumbleRig:GetChildren()) do
-                                    if root:FindFirstChild("GrumbleRig") then
-                                        setupGrumbleRig(root.GrumbleRig)
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-
-            local addconnect
-            addconnect = workspace.CurrentRooms.ChildAdded:Connect(function(room)
-                setup(room)
-            end)
-            
-            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
-                setup(room)
-            end
-
-            table.insert(_G.grumbleRigESPInstances, esptable)
-
-        else
-            if _G.grumbleRigESPInstances then
-                for _, instance in pairs(_G.grumbleRigESPInstances) do
-                    for _, v in pairs(instance.grumbleRigs) do
-                        v.delete()
-                    end
-                end
-                _G.grumbleRigESPInstances = nil
-            end
-        end
-    end
-})
 Library:SetWatermarkVisibility(true)
 
 -- Example of dynamically-updating watermark with common traits (fps and ping)
@@ -2728,7 +2596,7 @@ local WatermarkConnection = game:GetService('RunService').RenderStepped:Connect(
 		FrameCounter = 0;
 	end;
 
-	Library:SetWatermark(('Hax Alpha 4 | %s fps | %s ms'):format(
+	Library:SetWatermark(('Hax | %s fps | %s ms'):format(
 		math.floor(FPS),
 		math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue())
 	));
