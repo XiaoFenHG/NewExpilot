@@ -1867,52 +1867,7 @@ a:AddToggle('No Clip', {
         end
     end
 })
-a:AddToggle('hi', {
-    Text = 'Loot Prompt[F2 Test]',
-    Default = false,
-    Tooltip = 'Walk through walls',
-})
-Toggles.hi:OnChanged(function(value)
-    -- 遍历工作区中的 CurrentRooms
-    for _, room in pairs(game.Workspace.CurrentRooms:GetChildren()) do
-        -- 查找房间中的 Assets 文件夹
-        local assetsFolder = room:FindFirstChild("Assets")
-        if assetsFolder then
-            -- 查找 Assets 文件夹中的 Locker_Small
-            local lockerSmall = assetsFolder:FindFirstChild("Locker_Small")
-            if lockerSmall then
-                -- 查找 Locker_Small 中的 Door
-                local door = lockerSmall:FindFirstChild("Door")
-                if door then
-                    -- 查找 Door 中的 ActivateEventPrompt
-                    local prompt = door:FindFirstChild("ActivateEventPrompt")
-                    if prompt then
-                        -- 使用 fireproximityprompt 函数触发 ActivateEventPrompt 的点击事件
-                        fireproximityprompt(prompt)
-                        print("ActivateEventPrompt fired for", door.Name)
-                    end
-                end
-            end
 
-            -- 查找 Assets 文件夹中的 FuseObtain
-        
-            -- 查找 Assets 文件夹中的 GeneratorMain
-            
-
-            -- 查找 Assets 文件夹中的 Toolbox
-            local toolbox = assetsFolder:FindFirstChild("Toolbox")
-            if toolbox then
-                -- 查找 Toolbox 中的 ActivateEventPrompt
-                local prompt = toolbox:FindFirstChild("ActivateEventPrompt")
-                if prompt then
-                    -- 使用 fireproximityprompt 函数触发 ActivateEventPrompt 的点击事件
-                    fireproximityprompt(prompt)
-                    print("ActivateEventPrompt fired for", toolbox.Name)
-                end
-            end
-        end
-    end
-end)
 a:AddToggle('No Clip', {
     Text = 'TimeLever aura',
     Default = false,
@@ -2194,7 +2149,7 @@ a:AddToggle('No Clip', {
                         local prompt = descendant:FindFirstChild("FusesPrompt")
                         if prompt then
                             task.spawn(function()
-                                while autoInteract and not prompt:GetAttribute("Interactions") do
+                                while autoInteract and do
                                     task.wait(0.1)
                                     if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
                                         triggerFusesPrompt(prompt)
@@ -2580,8 +2535,6 @@ MainGroup3:AddToggle('No Clip', {
         end
     end
 })
-
-Library:SetWatermarkVisibility(true)
 
 -- Example of dynamically-updating watermark with common traits (fps and ping)
 local FrameTimer = tick()
