@@ -227,16 +227,7 @@ local esptable = {
     objectsESP = {}
 }
 
-local repo = 'https://raw.githubusercontent.com/mstudio45/LinoriaLib/main/'
 
-local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
-local ThemeManager = loadstring(game:HttpGet(repo .. 'addons/ThemeManager.lua'))()
-local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
-local Options = Library.Options
-local Toggles = Library.Toggles
-Library.NotifySide = "Right" -- Changes the side of the notifications globaly (Left, Right) (Default value = Left)
-Library.ShowToggleFrameInKeybinds = true -- Make toggle keybinds work inside the keybinds UI (aka adds a toggle to the UI). Good for mobile users (Default value = true)
-Library.ShowCustomCursor = true -- Toggles the Linoria cursor globaly (Default value = true)
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -246,21 +237,31 @@ local remotesFolder
 remotesFolder = ReplicatedStorage:WaitForChild("RemotesFolder", 5) -- Set a timeout
 local fireTouch
 -- Get the current date
-local date = os.date("%Y-%m-%d")
+local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
+local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
+local ThemeManager = loadstring(game:HttpGet(repo .. "addons/ThemeManager.lua"))()
+local SaveManager = loadstring(game:HttpGet(repo .. "addons/SaveManager.lua"))()
 
--- Get the player object
-local LocalPlayer = game.Players.LocalPlayer
+local Options = Library.Options
+local Toggles = Library.Toggles
 
--- Create the window with a welcome title including the player's name
+Library.ForceCheckbox = false -- Forces AddToggle to AddCheckbox
+Library.ShowToggleFrameInKeybinds = true -- Make toggle keybinds work inside the keybinds UI (aka adds a toggle to the UI). Good for mobile users (Default value = true)
+
 local Window = Library:CreateWindow({
-    Title = 'Welcome Player ' .. LocalPlayer.Name .. ' - Expilot Hax - ' .. date,
-    Center = true,
-    AutoShow = true,
-    Resizable = true,
-    ShowCustomCursor = true,
-    NotifySide = "Left",
-    TabPadding = 8,
-    MenuFadeTime = 0.2
+	-- Set Center to true if you want the menu to appear in the center
+	-- Set AutoShow to true if you want the menu to appear when it is created
+	-- Set Resizable to true if you want to have in-game resizable Window
+	-- Set ShowCustomCursor to false if you don't want to use the Linoria cursor
+	-- NotifySide = Changes the side of the notifications (Left, Right) (Default value = Left)
+	-- Position and Size are also valid options here
+	-- but you do not need to define them unless you are changing them :)
+
+	Title = "Exploit Hax",
+	Footer = "v1.5",
+	Icon = 18148044143,
+	NotifySide = "Right",
+	ShowCustomCursor = true,
 })
 
 local Tabs = {
