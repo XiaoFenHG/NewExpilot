@@ -27,8 +27,8 @@ local Window = Library:CreateWindow({
 
 local Tabs = {
 	-- Creates a new tab titled Main
-	Main = Window:AddTab('Fish')
-	['UI Settings'] = Window:AddTab('UI Editors'),
+	Main = Window:AddTab('Fish Automatic'),
+	['UI Settings'] = Window:AddTab('UI Addons'),
 }
 
 local a = Tabs.Main:AddLeftGroupbox('Automatic')
