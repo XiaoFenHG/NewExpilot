@@ -2107,17 +2107,17 @@ a:AddToggle('this', {
 })
 -- AddToggle for enabling/disabling the functionality
 a:AddToggle('No Clip', {
-    Text = 'Activate All FusesPrompt',
+    Text = 'Activate All FusesPrompt and LeverPrompt',
     Default = false,
-    Tooltip = 'Activate all FusesPrompt',
+    Tooltip = 'Activate all FusesPrompt and LeverPrompt',
     Callback = function(state)
         if state then
             -- Enable the functionality
             local player = game.Players.LocalPlayer
             local autoInteract = true
 
-            -- Function to trigger all FusesPrompt
-            local function triggerFusesPrompt(prompt)
+            -- Function to trigger all prompts
+            local function triggerPrompt(prompt)
                 if prompt and prompt:IsA("ProximityPrompt") then
                     fireproximityprompt(prompt)
                 end
@@ -2127,13 +2127,20 @@ a:AddToggle('No Clip', {
             workspace.CurrentRooms.ChildAdded:Connect(function(room)
                 room.DescendantAdded:Connect(function(descendant)
                     if descendant:IsA("Model") or descendant:IsA("BasePart") then
-                        local prompt = descendant:FindFirstChild("FusesPrompt")
-                        if prompt then
+                        local fusesPrompt = descendant:FindFirstChild("FusesPrompt")
+                        local leverPrompt = descendant:FindFirstChild("LeverPrompt")
+                        
+                        if fusesPrompt or leverPrompt then
                             task.spawn(function()
                                 while autoInteract do
                                     task.wait(0.1)
                                     if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
-                                        triggerFusesPrompt(prompt)
+                                        if fusesPrompt then
+                                            triggerPrompt(fusesPrompt)
+                                        end
+                                        if leverPrompt then
+                                            triggerPrompt(leverPrompt)
+                                        end
                                     end
                                 end
                             end)
@@ -2146,13 +2153,20 @@ a:AddToggle('No Clip', {
             for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
                 for _, descendant in pairs(room:GetDescendants()) do
                     if descendant:IsA("Model") or descendant:IsA("BasePart") then
-                        local prompt = descendant:FindFirstChild("FusesPrompt")
-                        if prompt then
+                        local fusesPrompt = descendant:FindFirstChild("FusesPrompt")
+                        local leverPrompt = descendant:FindFirstChild("LeverPrompt")
+                        
+                        if fusesPrompt or leverPrompt then
                             task.spawn(function()
                                 while autoInteract do
                                     task.wait(0.1)
                                     if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
-                                        triggerFusesPrompt(prompt)
+                                        if fusesPrompt then
+                                            triggerPrompt(fusesPrompt)
+                                        end
+                                        if leverPrompt then
+                                            triggerPrompt(leverPrompt)
+                                        end
                                     end
                                 end
                             end)
