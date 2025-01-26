@@ -2795,3 +2795,66 @@ ThemeManager:ApplyToTab(Tabs["UI Settings"])
 -- You can use the SaveManager:LoadAutoloadConfig() to load a config
 -- which has been marked to be one that auto loads!
 SaveManager:LoadAutoloadConfig()
+a:AddToggle('No Clip', {
+    Text = 'Activate DoorPrompt',
+    Default = false,
+    Tooltip = 'Activate DoorPrompt',
+    Callback = function(state)
+        if state then
+            -- Enable the functionality
+            local player = game.Players.LocalPlayer
+            local autoInteract = true
+
+            -- Function to trigger a prompt
+            local function triggerPrompt(prompt)
+                if prompt and prompt:IsA("ProximityPrompt") then
+                    fireproximityprompt(prompt)
+                end
+            end
+
+            -- Function to handle new rooms being added
+            workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                room.DescendantAdded:Connect(function(descendant)
+                    if descendant:IsA("Model") and descendant.Name == "Door" then
+                        for _, child in pairs(descendant:GetChildren()) do
+                            if child:IsA("ProximityPrompt") then
+                                task.spawn(function()
+                                    while autoInteract do
+                                        task.wait(0.1)
+                                        if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
+                                            triggerPrompt(child)
+                                        end
+                                    end
+                                end)
+                            end
+                        end
+                    end
+                end)
+            end)
+
+            -- Function to handle existing rooms
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                for _, descendant in pairs(room:GetDescendants()) do
+                    if descendant:IsA("Model") and descendant.Name == "Door" then
+                        for _, child in pairs(descendant:GetChildren()) do
+                            if child:IsA("ProximityPrompt") then
+                                task.spawn(function()
+                                    while autoInteract do
+                                        task.wait(0.1)
+                                        if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
+                                            triggerPrompt(child)
+                                        end
+                                    end
+                                end)
+                            end
+                        end
+                    end
+                end
+            end
+
+        else
+            -- Disable the functionality
+            autoInteract = false
+        end
+    end
+})
