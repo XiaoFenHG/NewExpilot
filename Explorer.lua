@@ -31,8 +31,85 @@ local Tabs = {
 	['UI Settings'] = Window:AddTab('UI Editors'),
 }
 
-local RightGroup = Tabs.Main:AddLeftGroupbox('Automatic Function')
+local a = Tabs.Main:AddLeftGroupbox('Automatic')
+a:AddToggle('Automatic Fish', {
+    Text = 'Automatic Fishing',
+    Default = false,
+    Tooltip = 'Automatically fish using the specified parameters',
+    Callback = function(state)
+        if state then
+            -- Enable automatic fishing
+            local autoFish = true
+            
+            -- Function to execute the fishing actions
+            local function performFishing()
+                while autoFish do
+                    -- First set of args
+                    local args1 = {
+                        [1] = 100,
+                        [2] = 1
+                    }
 
+                    game:GetService("Players").LocalPlayer:WaitForChild("cast"):FireServer(unpack(args1))
+
+                    -- Wait a bit before the next action
+                    task.wait(0.5)
+
+                    -- Second set of args
+                    local args2 = {
+                        [1] = 100,
+                        [2] = true
+                    }
+
+                    game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("reelfinished"):FireServer(unpack(args2))
+
+                    -- Wait before repeating
+                    task.wait(0.5)
+                end
+            end
+
+            -- Start the fishing loop in a new thread
+            task.spawn(performFishing)
+
+        else
+            -- Disable automatic fishing
+            autoFish = false
+        end
+    end
+})
+
+a:AddToggle('Equip Carbon Rod', {
+    Text = 'Equip Carbon Rod',
+    Default = false,
+    Tooltip = 'Equip the Carbon Rod from your inventory',
+    Callback = function(state)
+        if state then
+            -- Enable equipping Carbon Rod
+            local autoEquip = true
+            
+            -- Function to execute the equip action
+            local function performEquip()
+                while autoEquip do
+                    local args = {
+                        [1] = game:GetService("Players").LocalPlayer:WaitForChild("Carbon Rod")
+                    }
+
+                    game:GetService("ReplicatedStorage"):WaitForChild("packages"):WaitForChild("Net"):WaitForChild("RE/Backpack/Equip"):FireServer(unpack(args))
+                    
+                    -- Wait before repeating
+                    task.wait(0.5)
+                end
+            end
+
+            -- Start the equip loop in a new thread
+            task.spawn(performEquip)
+
+        else
+            -- Disable equipping Carbon Rod
+            autoEquip = false
+        end
+    end
+})
 local MenuGroup = Tabs["UI Settings"]:AddLeftGroupbox("Menu")
 
 MenuGroup:AddToggle("KeybindMenuOpen", {
