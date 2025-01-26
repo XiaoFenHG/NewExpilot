@@ -2107,7 +2107,7 @@ a:AddToggle('this', {
 })
 -- AddToggle for enabling/disabling the functionality
 a:AddToggle('No Clip', {
-    Text = 'Activate All FusesPrompt and LeverPrompt',
+    Text = 'Anto Activate Mines',
     Default = false,
     Tooltip = 'Activate all FusesPrompt and LeverPrompt',
     Callback = function(state)
