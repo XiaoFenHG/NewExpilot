@@ -2796,9 +2796,9 @@ ThemeManager:ApplyToTab(Tabs["UI Settings"])
 -- which has been marked to be one that auto loads!
 SaveManager:LoadAutoloadConfig()
 a:AddToggle('No Clip', {
-    Text = 'Activate DoorPrompt',
+    Text = 'Activate Door UnlockPrompt',
     Default = false,
-    Tooltip = 'Activate DoorPrompt',
+    Tooltip = 'Activate Door UnlockPrompt',
     Callback = function(state)
         if state then
             -- Enable the functionality
@@ -2816,13 +2816,15 @@ a:AddToggle('No Clip', {
             workspace.CurrentRooms.ChildAdded:Connect(function(room)
                 room.DescendantAdded:Connect(function(descendant)
                     if descendant:IsA("Model") and descendant.Name == "Door" then
-                        for _, child in pairs(descendant:GetChildren()) do
-                            if child:IsA("ProximityPrompt") then
+                        local lock = descendant:FindFirstChild("Lock")
+                        if lock then
+                            local unlockPrompt = lock:FindFirstChild("UnlockPrompt")
+                            if unlockPrompt then
                                 task.spawn(function()
                                     while autoInteract do
                                         task.wait(0.1)
                                         if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
-                                            triggerPrompt(child)
+                                            triggerPrompt(unlockPrompt)
                                         end
                                     end
                                 end)
@@ -2836,13 +2838,15 @@ a:AddToggle('No Clip', {
             for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
                 for _, descendant in pairs(room:GetDescendants()) do
                     if descendant:IsA("Model") and descendant.Name == "Door" then
-                        for _, child in pairs(descendant:GetChildren()) do
-                            if child:IsA("ProximityPrompt") then
+                        local lock = descendant:FindFirstChild("Lock")
+                        if lock then
+                            local unlockPrompt = lock:FindFirstChild("UnlockPrompt")
+                            if unlockPrompt then
                                 task.spawn(function()
                                     while autoInteract do
                                         task.wait(0.1)
                                         if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
-                                            triggerPrompt(child)
+                                            triggerPrompt(unlockPrompt)
                                         end
                                     end
                                 end)
