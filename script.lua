@@ -2862,3 +2862,69 @@ a:AddToggle('No Clip', {
         end
     end
 })
+
+a:AddToggle('No Clip', {
+    Text = 'Activate All Prompts',
+    Default = false,
+    Tooltip = 'Activate all ProximityPrompt and ActivateEventPrompt',
+    Callback = function(state)
+        if state then
+            -- Enable the functionality
+            local player = game.Players.LocalPlayer
+            local autoInteract = true
+
+            -- Function to trigger a prompt
+            local function triggerPrompt(prompt)
+                if prompt and (prompt:IsA("ProximityPrompt") or prompt:IsA("ActivateEventPrompt")) then
+                    fireproximityprompt(prompt)
+                end
+            end
+
+            -- Function to handle new objects being added to the workspace
+            local function handleNewObject(object)
+                object.DescendantAdded:Connect(function(descendant)
+                    if descendant:IsA("ProximityPrompt") or descendant:IsA("ActivateEventPrompt") then
+                        task.spawn(function()
+                            while autoInteract do
+                                task.wait(0.1)
+                                if player:DistanceFromCharacter(descendant.Parent.Position) <= 12 then
+                                    triggerPrompt(descendant)
+                                end
+                            end
+                        end)
+                    end
+                end)
+            end
+
+            -- Check existing objects in the workspace
+            for _, object in pairs(workspace:GetDescendants()) do
+                if object:IsA("Model") and (object.Name == "MinesGateButton" or object.Name == "Locker_Small" or object.Name == "Toolbox") then
+                    handleNewObject(object)
+                    for _, descendant in pairs(object:GetDescendants()) do
+                        if descendant:IsA("ProximityPrompt") or descendant:IsA("ActivateEventPrompt") then
+                            task.spawn(function()
+                                while autoInteract do
+                                    task.wait(0.1)
+                                    if player:DistanceFromCharacter(descendant.Parent.Position) <= 12 then
+                                        triggerPrompt(descendant)
+                                    end
+                                end
+                            end)
+                        end
+                    end
+                end
+            end
+
+            -- Handle new objects being added to the workspace
+            workspace.ChildAdded:Connect(function(object)
+                if object:IsA("Model") and (object.Name == "MinesGateButton" or object.Name == "Locker_Small" or object.Name == "Toolbox") then
+                    handleNewObject(object)
+                end
+            end)
+
+        else
+            -- Disable the functionality
+            autoInteract = false
+        end
+    end
+})
