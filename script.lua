@@ -2130,7 +2130,7 @@ a:AddToggle('No Clip', {
                         local prompt = descendant:FindFirstChild("FusesPrompt")
                         if prompt then
                             task.spawn(function()
-                                while autoInteract and do
+                                while autoInteract do
                                     task.wait(0.1)
                                     if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
                                         triggerFusesPrompt(prompt)
@@ -2149,7 +2149,7 @@ a:AddToggle('No Clip', {
                         local prompt = descendant:FindFirstChild("FusesPrompt")
                         if prompt then
                             task.spawn(function()
-                                while autoInteract and do
+                                while autoInteract do
                                     task.wait(0.1)
                                     if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
                                         triggerFusesPrompt(prompt)
