@@ -2127,23 +2127,25 @@ a:AddToggle('No Clip', {
             workspace.CurrentRooms.ChildAdded:Connect(function(room)
                 room.DescendantAdded:Connect(function(descendant)
                     if descendant:IsA("Model") or descendant:IsA("BasePart") then
+                        local lever = descendant:FindFirstChild("Lever")
                         local fusesPrompt = descendant:FindFirstChild("FusesPrompt")
-                        local leverPrompt = descendant:FindFirstChild("LeverPrompt")
-                        
-                        if fusesPrompt or leverPrompt then
-                            task.spawn(function()
-                                while autoInteract do
-                                    task.wait(0.1)
-                                    if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
-                                        if fusesPrompt then
-                                            triggerPrompt(fusesPrompt)
-                                        end
-                                        if leverPrompt then
-                                            triggerPrompt(leverPrompt)
+                        if lever or fusesPrompt then
+                            local leverPrompt = lever and lever:FindFirstChild("LeverPrompt")
+                            if leverPrompt or fusesPrompt then
+                                task.spawn(function()
+                                    while autoInteract do
+                                        task.wait(0.1)
+                                        if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
+                                            if leverPrompt then
+                                                triggerPrompt(leverPrompt)
+                                            end
+                                            if fusesPrompt then
+                                                triggerPrompt(fusesPrompt)
+                                            end
                                         end
                                     end
-                                end
-                            end)
+                                end)
+                            end
                         end
                     end
                 end)
@@ -2153,28 +2155,29 @@ a:AddToggle('No Clip', {
             for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
                 for _, descendant in pairs(room:GetDescendants()) do
                     if descendant:IsA("Model") or descendant:IsA("BasePart") then
+                        local lever = descendant:FindFirstChild("Lever")
                         local fusesPrompt = descendant:FindFirstChild("FusesPrompt")
-                        local leverPrompt = descendant:FindFirstChild("LeverPrompt")
-                        
-                        if fusesPrompt or leverPrompt then
-                            task.spawn(function()
-                                while autoInteract do
-                                    task.wait(0.1)
-                                    if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
-                                        if fusesPrompt then
-                                            triggerPrompt(fusesPrompt)
-                                        end
-                                        if leverPrompt then
-                                            triggerPrompt(leverPrompt)
+                        if lever or fusesPrompt then
+                            local leverPrompt = lever and lever:FindFirstChild("LeverPrompt")
+                            if leverPrompt or fusesPrompt then
+                                task.spawn(function()
+                                    while autoInteract do
+                                        task.wait(0.1)
+                                        if player:DistanceFromCharacter(descendant.PrimaryPart.Position) <= 12 then
+                                            if leverPrompt then
+                                                triggerPrompt(leverPrompt)
+                                            end
+                                            if fusesPrompt then
+                                                triggerPrompt(fusesPrompt)
+                                            end
                                         end
                                     end
-                                end
-                            end)
+                                end)
+                            end
                         end
                     end
                 end
             end
-
         else
             -- Disable the functionality
             autoInteract = false
@@ -2925,6 +2928,80 @@ a:AddToggle('No Clip', {
         else
             -- Disable the functionality
             autoInteract = false
+        end
+    end
+})
+
+a:AddToggle('Automatic Fuse', {
+    Text = 'Automatic Fuse',
+    Default = false,
+    Tooltip = 'Automatically obtain fuses by triggering ModulePrompt',
+    Callback = function(state)
+        if state then
+            -- Enable the functionality
+            local player = game.Players.LocalPlayer
+            local autoFuse = true
+
+            -- Function to trigger all prompts
+            local function triggerPrompt(prompt)
+                if prompt and prompt:IsA("ProximityPrompt") then
+                    fireproximityprompt(prompt)
+                end
+            end
+
+            -- Function to handle new lockers being added
+            workspace.CurrentRooms.ChildAdded:Connect(function(room)
+                room.DescendantAdded:Connect(function(descendant)
+                    if descendant.Name == "Locker_Small" then
+                        local fuseHolder = descendant:FindFirstChild("FuseHolder")
+                        if fuseHolder then
+                            local fuseObtain = fuseHolder:FindFirstChild("FuseObtain")
+                            if fuseObtain then
+                                local modulePrompt = fuseObtain:FindFirstChild("ModulePrompt")
+                                if modulePrompt then
+                                    task.spawn(function()
+                                        while autoFuse do
+                                            task.wait(0.1)
+                                            if player:DistanceFromCharacter(fuseObtain.Position) <= 12 then
+                                                triggerPrompt(modulePrompt)
+                                            end
+                                        end
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                end)
+            end)
+
+            -- Function to handle existing lockers
+            for _, room in pairs(workspace.CurrentRooms:GetChildren()) do
+                for _, descendant in pairs(room:GetDescendants()) do
+                    if descendant.Name == "Locker_Small" then
+                        local fuseHolder = descendant:FindFirstChild("FuseHolder")
+                        if fuseHolder then
+                            local fuseObtain = fuseHolder:FindFirstChild("FuseObtain")
+                            if fuseObtain then
+                                local modulePrompt = fuseObtain:FindFirstChild("ModulePrompt")
+                                if modulePrompt then
+                                    task.spawn(function()
+                                        while autoFuse do
+                                            task.wait(0.1)
+                                            if player:DistanceFromCharacter(fuseObtain.Position) <= 12 then
+                                                triggerPrompt(modulePrompt)
+                                            end
+                                        end
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+
+        else
+            -- Disable the functionality
+            autoFuse = false
         end
     end
 })
